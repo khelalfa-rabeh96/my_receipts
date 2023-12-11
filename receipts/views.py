@@ -1,9 +1,13 @@
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
-# Create your views here.
+from .models import Receipt
+
 def receipts_list(request):
-    
-    return render(request, 'receipt_list.html', {
-    'new_total_amount': request.POST.get('new_total_amount', ''),
-    })
+    if request.method == 'POST':
+        total_amount = request.POST.get('new_total_amount', 0)
+        Receipt.objects.create(total_amount=total_amount)
+        return redirect('/')
+  
+    receipts = Receipt.objects.all()
+    return render(request, 'receipt_list.html', {'receipts': receipts})

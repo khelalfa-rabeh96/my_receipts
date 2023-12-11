@@ -10,7 +10,12 @@
             {% csrf_token %}
         </form>
         <ul id="my_receipt_list">
-            <li class="my_receipt_item">{{ new_total_amount }}</li>
+            {% for receipt in receipts %}
+                <li class="my_receipt_item">
+                    {{ receipt.total_amount }}
+                </li>
+            {% endfor %}
+           
         </ul>
     <body>
     
