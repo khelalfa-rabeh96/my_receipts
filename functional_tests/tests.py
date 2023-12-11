@@ -2,6 +2,7 @@ import time
 
 from decimal import Decimal
 from django.test import TestCase
+from django.test import LiveServerTestCase
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -14,7 +15,7 @@ env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env()
 
 
-class NewVisitorTest(TestCase):
+class NewVisitorTest(LiveServerTestCase):
     def setUp(self):
         service = Service(executable_path=env('GECKODRIVER_PATH'))
         self.driver = webdriver.Firefox(service=service)
@@ -35,7 +36,7 @@ class NewVisitorTest(TestCase):
         )
 
     def test_can_start_a_list_and_retrieve_it_later(self):
-        self.driver.get('http://localhost:8000')
+        self.driver.get(self.live_server_url)
         self.assertIn('My Receipts', self.driver.title)
     
         # The Authed user finds a header text as 'My Receipts'
