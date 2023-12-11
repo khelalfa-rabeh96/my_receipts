@@ -8,11 +8,14 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import WebDriverException
 
 import environ
 
 env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env()
+
+MAX_WAIT = 10
 
 
 class NewVisitorTest(LiveServerTestCase):
@@ -27,13 +30,21 @@ class NewVisitorTest(LiveServerTestCase):
     def get_number_with_two_decimal_places(self, number):
         return format(Decimal(number), '.2f')
 
-    def check_for_total_amount_in_receipt_list(self, total_amount):
-        my_receipt_list = self.driver.find_element(By.ID,'my_receipt_list')
-        receipts = my_receipt_list.find_elements(By.TAG_NAME,'li')
-        self.assertIn(
-            self.get_number_with_two_decimal_places(total_amount), 
-            [row.text for row in receipts]
-        )
+    def wait_for_total_amount_in_receipt_list(self, total_amount):
+        start_time = time.time()
+        while True:
+            try:
+                my_receipt_list = self.driver.find_element(By.ID,'my_receipt_list')
+                receipts = my_receipt_list.find_elements(By.TAG_NAME,'li')
+                self.assertIn(
+                    self.get_number_with_two_decimal_places(total_amount), 
+                    [row.text for row in receipts]
+                )
+                return
+            except (AssertionError, WebDriverException) as e:
+                if time.time() - start_time > MAX_WAIT:
+                    raise e
+                time.sleep(0.5)
 
     def test_can_start_a_list_and_retrieve_it_later(self):
         self.driver.get(self.live_server_url)
@@ -52,18 +63,15 @@ class NewVisitorTest(LiveServerTestCase):
 
         # The The Authed hits enter
         total_amount_input.send_keys(Keys.ENTER)
-        time.sleep(1)
-
-        self.check_for_total_amount_in_receipt_list(self.total_amount)
+        self.wait_for_total_amount_in_receipt_list(self.total_amount)
 
         # The The Authed user adds another total amount field
         total_amount_input = self.driver.find_element(By.ID,'new_total_amount')
         total_amount_input.send_keys(self.total_amount + 10)
         total_amount_input.send_keys(Keys.ENTER)
-        time.sleep(1)
 
-        self.check_for_total_amount_in_receipt_list(self.total_amount)
-        self.check_for_total_amount_in_receipt_list(self.total_amount + 10)
+        self.wait_for_total_amount_in_receipt_list(self.total_amount)
+        self.wait_for_total_amount_in_receipt_list(self.total_amount + 10)
 
 
 
