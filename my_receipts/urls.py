@@ -17,6 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from receipts.views import receipts_list
+
 urlpatterns = [
+    path('', receipts_list, name="receipts-list"),
     path('admin/', admin.site.urls),
 ]
