@@ -20,6 +20,6 @@ from django.urls import path, include
 from receipts.views import receipts_list
 
 urlpatterns = [
-    path('receipts', include('receipts.urls')),
+    path('receipts/', include('receipts.urls')),
     path('admin/', admin.site.urls),
 ]
