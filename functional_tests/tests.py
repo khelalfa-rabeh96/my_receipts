@@ -3,6 +3,7 @@ import time
 from decimal import Decimal
 from django.test import TestCase
 from django.test import LiveServerTestCase
+from django.urls import reverse
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -18,11 +19,12 @@ environ.Env.read_env()
 MAX_WAIT = 10
 
 
-class NewVisitorTest(LiveServerTestCase):
+class NewReceiptTest(LiveServerTestCase):
     def setUp(self):
         service = Service(executable_path=env('GECKODRIVER_PATH'))
         self.driver = webdriver.Firefox(service=service)
         self.total_amount = 2566.23
+        self.url = reverse('receipt-list')
 
     def tearDown(self):
         self.driver.close()
@@ -47,14 +49,14 @@ class NewVisitorTest(LiveServerTestCase):
                 time.sleep(0.5)
 
     def test_can_start_a_list_and_retrieve_it_later(self):
-        self.driver.get(self.live_server_url)
+        self.driver.get(self.live_server_url + self.url)
         self.assertIn('My Receipts', self.driver.title)
     
         # The Authed user finds a header text as 'My Receipts'
         header_text = self.driver.find_element(By.TAG_NAME, 'h1').text
         self.assertIn('My Receipts', header_text)
 
-        # The Authed user invited to add a new receipts to his list by filling the form
+        # The Authed user invited to add a My receiptss to his list by filling the form
         # The Authed user find field to enter the total amount
         total_amount_input = self.driver.find_element(By.ID,'new_total_amount')
         
@@ -65,6 +67,12 @@ class NewVisitorTest(LiveServerTestCase):
         total_amount_input.send_keys(Keys.ENTER)
         self.wait_for_total_amount_in_receipt_list(self.total_amount)
 
+        #time.sleep(1)
+
+        # make sure the user get redirect to receipt list page after submitting new receipt
+        # self.assertEqual(self.driver.current_url, self.live_server_url + '/')
+        # self.wait_for_total_amount_in_receipt_list(self.total_amount)
+
         # The The Authed user adds another total amount field
         total_amount_input = self.driver.find_element(By.ID,'new_total_amount')
         total_amount_input.send_keys(self.total_amount + 10)
@@ -72,6 +80,3 @@ class NewVisitorTest(LiveServerTestCase):
 
         self.wait_for_total_amount_in_receipt_list(self.total_amount)
         self.wait_for_total_amount_in_receipt_list(self.total_amount + 10)
-
-
-
