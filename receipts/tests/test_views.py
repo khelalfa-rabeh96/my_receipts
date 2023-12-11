@@ -8,6 +8,11 @@ class ReceiptListTest(TestCase):
         found = resolve('/')
         self.assertEqual(found.func, receipts_list)
     
-    def test_uses_home_template(self):
+    def test_receipt_list_view_uses_receipt_list_template(self):
         response = self.client.get('/')
+        self.assertTemplateUsed(response, 'receipt_list.html')
+
+    def test_receipt_list_view_can_save_a_POST_request(self):
+        response = self.client.post('/', data={'new_total_amount': 1000})
+        self.assertIn('1000', response.content.decode())
         self.assertTemplateUsed(response, 'receipt_list.html')
