@@ -1,5 +1,6 @@
 import time
 
+from decimal import Decimal
 from django.test import TestCase
 
 from selenium import webdriver
@@ -17,20 +18,25 @@ class NewVisitorTest(TestCase):
     def setUp(self):
         service = Service(executable_path=env('GECKODRIVER_PATH'))
         self.driver = webdriver.Firefox(service=service)
-        self.total_amount = 2566
+        self.total_amount = 2566.23
 
     def tearDown(self):
         self.driver.close()
+    
+    def get_number_with_two_decimal_places(self, number):
+        return format(Decimal(number), '.2f')
 
     def check_for_total_amount_in_receipt_list(self, total_amount):
         my_receipt_list = self.driver.find_element(By.ID,'my_receipt_list')
         receipts = my_receipt_list.find_elements(By.TAG_NAME,'li')
-        self.assertIn(f'{total_amount}', [row.text for row in receipts])
+        self.assertIn(
+            self.get_number_with_two_decimal_places(total_amount), 
+            [row.text for row in receipts]
+        )
 
     def test_can_start_a_list_and_retrieve_it_later(self):
         self.driver.get('http://localhost:8000')
         self.assertIn('My Receipts', self.driver.title)
-    
     
         # The Authed user finds a header text as 'My Receipts'
         header_text = self.driver.find_element(By.TAG_NAME, 'h1').text
