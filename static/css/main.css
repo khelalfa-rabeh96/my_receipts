@@ -48,6 +48,10 @@ ul.receipts {
     padding: 0;
     margin: 0;
 }
+
+ul.receipts li{
+    max-width: 400px;
+}
   ul.receipts > li > a {
     margin-bottom: 15px;
     display: flex;

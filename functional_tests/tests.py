@@ -25,10 +25,10 @@ class NewListTest(LiveServerTestCase):
         service = Service(executable_path=env('GECKODRIVER_PATH'))
         self.driver = webdriver.Firefox(service=service)
         self.store_name = "Walmart"
-        self.total_amount = 2566.23
+        self.total_amount = 2566.2
         self.date_of_purchase = datetime.date.today()
         self.item_list = "Apple, Banana, Orange"
-        self.url = reverse('new-receipt')
+        self.url = reverse('receipts:new-receipt')
 
     def tearDown(self):
         self.driver.close()
@@ -36,16 +36,22 @@ class NewListTest(LiveServerTestCase):
     def get_number_with_two_decimal_places(self, number):
         return format(Decimal(number), '.2f')
 
-    def wait_for_total_amount_in_receipt_list(self, total_amount):
+    def wait_and_check_for_new_receipt_in_receipt_list(self):
         start_time = time.time()
         while True:
             try:
                 my_receipt_list = self.driver.find_element(By.ID,'my_receipt_list')
                 receipts = my_receipt_list.find_elements(By.TAG_NAME,'li')
                 self.assertIn(
-                    self.get_number_with_two_decimal_places(total_amount), 
-                    [row.text for row in receipts]
+                    self.get_number_with_two_decimal_places(self.total_amount), 
+                    [row.text for row in receipts][-1]
                 )
+
+                self.assertIn(
+                    self.item_list[0:10], 
+                    [row.text for row in receipts][-1]
+                )
+                
                 return
             except (AssertionError, WebDriverException) as e:
                 if time.time() - start_time > MAX_WAIT:
@@ -77,19 +83,18 @@ class NewListTest(LiveServerTestCase):
             f"arguments[0].setAttribute('value', {date_of_purchase})", 
             date_of_purchase_input
         )
-        #date_of_purchase_input.send_keys(self.date_of_purchase)
 
         item_list_input.send_keys(self.item_list)
-
-        submit_btn = self.driver.find_element(By.ID,'submit_btn')
-        #submit_btn.click()
-
+        
         # The The Authed hits enter
+        submit_btn = self.driver.find_element(By.ID,'submit_btn')
+        submit_btn.click()
+
         #self.wait_for_total_amount_in_receipt_list(self.total_amount)
 
-        #time.sleep(1)
+        time.sleep(1)
 
         # make sure the user get redirect to receipt list page after submitting new receipt
-        #self.assertEqual(self.driver.current_url, self.live_server_url + reverse('receipt-list'))
-        #self.wait_for_total_amount_in_receipt_list(self.total_amount)
+        self.assertEqual(self.driver.current_url, self.live_server_url + reverse('receipts:receipt-list'))
+        self.wait_and_check_for_new_receipt_in_receipt_list()
         
