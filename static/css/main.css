@@ -1,0 +1,82 @@
+a{
+    cursor: pointer;
+    color: #ff8c3a;
+}
+
+nav{
+    box-shadow: 1px 1px 1px #cecece;
+}
+
+.navbar-default .navbar-nav>.active>a, .navbar-default .navbar-nav>.active>a:hover, .navbar-default .navbar-nav>.active>a:focus {
+    background: initial;
+    color: initial;
+}
+
+#content .h3 button {
+    margin-right: 10px;
+}
+
+#content .h3 {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.btn-default {
+    border: none;
+    background-color: #dde2e7;
+    background-image: linear-gradient(#dde2e7,#dde2e7);
+    color: #444;
+}
+
+.navbar-default .navbar-nav>.open>a, .navbar-default .navbar-nav>.active>a {
+    background: none;
+    box-shadow: none;
+    color: black;
+    font-weight: bold;
+}
+
+.navbar.navbar-fixed-top {
+    background: none;
+    box-shadow: none;
+    border-bottom: none;
+    padding-top: 10px;
+    background-color: white;
+}
+
+ul.receipts {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+  ul.receipts > li > a {
+    margin-bottom: 15px;
+    display: flex;
+    color: initial;
+    text-decoration: initial;
+}
+  ul.receipts > li > a > i {
+    padding: 7px 10px 0;
+}
+  ul.receipts > li:hover {
+    color: orange;
+    cursor: pointer;
+}
+  ul.receipts > li:hover h5 {
+    color: orange;
+}
+.item {
+    padding: 5px 5px 5px;
+    flex: 1;
+}
+.item h5 {
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+
+p{
+    margin: 5px 0;
+}
+p > i {
+    width: 30px;
+    text-align: center;
+}

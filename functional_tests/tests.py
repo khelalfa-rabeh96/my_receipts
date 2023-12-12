@@ -19,7 +19,7 @@ environ.Env.read_env()
 MAX_WAIT = 10
 
 
-class NewReceiptTest(LiveServerTestCase):
+class NewVisitorTest(LiveServerTestCase):
     def setUp(self):
         service = Service(executable_path=env('GECKODRIVER_PATH'))
         self.driver = webdriver.Firefox(service=service)
@@ -72,4 +72,16 @@ class NewReceiptTest(LiveServerTestCase):
         # make sure the user get redirect to receipt list page after submitting new receipt
         self.assertEqual(self.driver.current_url, self.live_server_url + reverse('receipt-list'))
         self.wait_for_total_amount_in_receipt_list(self.total_amount)
+    
+    def test_layout_and_styling(self):
+        # Edith goes to the home page
+        self.driver.get(self.live_server_url + self.url)
+        self.driver.set_window_size(1024, 768)
+        # She notices the input box is nicely centered
+        total_amount_input = self.driver.find_element(By.ID, 'new_total_amount')
+        self.assertAlmostEqual(
+            total_amount_input.location['x'] + total_amount_input.size['width'] / 2,
+            512,
+            delta=10
+        )
         

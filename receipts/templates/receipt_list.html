@@ -1,17 +1,15 @@
-<html>
-    <head>
-        <title>My Receipts</title>
-   <head>
-    <body>
-        <h1>My Receipts</h1>
-        <ul id="my_receipt_list">
+{% extends 'base.html' %}
+{% block title %}My Receipts{% endblock %}
+{% block content %}
+<div class="receipt_list_container">
+        <h1 class="h3">My Receipts</h1>
+        <ul id="my_receipt_list" class="receipts">
             {% for receipt in receipts %}
-                <li class="my_receipt_item">
+                <li class="my_receipt_item item">
                     {{ receipt.total_amount }}
                 </li>
-            {% endfor %}
-           
+            {% endfor %}  
         </ul>
-    <body>
-    
-</html>
+</div>
+
+{% endblock %}
