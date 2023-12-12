@@ -2,8 +2,9 @@ from django.urls import resolve
 from django.test import TestCase
 from django.urls import reverse
 
-from receipts.views import receipts_list, new_receipt, NewReceiptView
+from receipts.views import receipts_list, NewReceiptView
 from receipts.models import Receipt
+from receipts.forms import ReceiptModelForm
 
 class ReceiptListTest(TestCase):
     def setUp(self):
@@ -18,13 +19,16 @@ class ReceiptListTest(TestCase):
         self.assertTemplateUsed(response, 'receipt_list.html')
 
     def test_displays_all_receipt_receipt(self):
-        Receipt.objects.create(total_amount=1000)
-        Receipt.objects.create(total_amount=2000)
+        Receipt.objects.create(store_name="walmart", total_amount=1000, item_list="item1, item2")
+        Receipt.objects.create(store_name='KFC', total_amount=2000, item_list="item3, item4")
 
         response = self.client.get(self.url)
 
         self.assertIn('1000', response.content.decode())
+        self.assertIn('item1, item2', response.content.decode())
+
         self.assertIn('2000', response.content.decode())
+        self.assertIn('item3, item4', response.content.decode())
 
 
 class NewReceiptTest(TestCase):
@@ -40,15 +44,34 @@ class NewReceiptTest(TestCase):
         self.assertTemplateUsed(response, 'new_receipt.html')
     
     def test_new_receipt_view_can_save_a_POST_request(self):
-        total_amount = 1000
-        item_list = "item1, item2"
-        self.client.post(self.url, data={'total_amount': total_amount , "item_list": item_list})
+        data = {'store_name': 'Walmart', 'total_amount': 1000 , "item_list": "item1, item2"}
+        self.client.post(self.url, data=data)
         
         self.assertEqual(Receipt.objects.count(), 1)
         receipt = Receipt.objects.first()
-        self.assertEqual(receipt.total_amount, total_amount)
-        self.assertEqual(receipt.item_list, item_list)
+        self.assertEqual(receipt.total_amount, data['total_amount'])
+        self.assertEqual(receipt.item_list, data['item_list'])
+        self.assertEqual(receipt.store_name, data['store_name'])
     
-    def test_redirects_after_POST_new_receipt(self):
-        response = self.client.post(self.url, data={'total_amount': 1000, 'item_list': 'item1, item2'})
+    def test_redirects_after_successful_POST_new_receipt_to_receipt_list(self):
+        data = data={'store_name': 'Walmart', 'total_amount': 1000, 'item_list': 'item1, item2'}
+        response = self.client.post(
+            self.url, 
+            data
+        )
         self.assertRedirects(response, reverse('receipts:receipt-list'))
+    
+    def test_required_item_list(self):
+        data = {'store_name': 'Walmart', 'total_amount': 1000}
+        response = self.client.post(self.url, data=data)
+        self.assertEqual(Receipt.objects.count(), 0)
+    
+    def test_required_store_name(self):
+        data={'total_amount': 1000, 'item_list': 'item1, item2'}
+        response = self.client.post(self.url, data=data)
+        self.assertEqual(Receipt.objects.count(), 0)
+    
+    def test_stay_at_new_receipt_page_after_unsuccessfuly_POST_new_receipt(self):
+        data = {}
+        response = self.client.post(self.url, data=data)
+        self.assertTemplateUsed(response, 'new_receipt.html')

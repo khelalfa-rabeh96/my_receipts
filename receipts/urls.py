@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import receipts_list, new_receipt, NewReceiptView
+from .views import receipts_list, NewReceiptView
 
 app_name = "receipts"
 

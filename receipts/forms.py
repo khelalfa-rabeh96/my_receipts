@@ -8,4 +8,4 @@ class ReceiptModelForm(forms.ModelForm):
     item_list = forms.CharField(required=True)
     class Meta:
         model = Receipt
-        fields = ['total_amount', 'item_list']
+        fields = ['store_name', 'total_amount', 'item_list']
