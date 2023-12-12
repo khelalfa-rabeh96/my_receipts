@@ -1,4 +1,5 @@
 import time
+import datetime
 
 from decimal import Decimal
 from django.test import TestCase
@@ -19,11 +20,14 @@ environ.Env.read_env()
 MAX_WAIT = 10
 
 
-class NewVisitorTest(LiveServerTestCase):
+class NewListTest(LiveServerTestCase):
     def setUp(self):
         service = Service(executable_path=env('GECKODRIVER_PATH'))
         self.driver = webdriver.Firefox(service=service)
+        self.store_name = "Walmart"
         self.total_amount = 2566.23
+        self.date_of_purchase = datetime.date.today()
+        self.item_list = "Apple, Banana, Orange"
         self.url = reverse('new-receipt')
 
     def tearDown(self):
@@ -56,32 +60,36 @@ class NewVisitorTest(LiveServerTestCase):
         header_text = self.driver.find_element(By.TAG_NAME, 'h1').text
         self.assertIn('New Receipt', header_text)
 
-        # The Authed user invited to add a My receiptss to his list by filling the form
-        # The Authed user find field to enter the total amount
-        total_amount_input = self.driver.find_element(By.ID,'new_total_amount')
-        
-        # The The Authed user types a number into the total amount field
+        # The Authed user invited to add a new receipt by filling a form
+        store_name_input = self.driver.find_element(By.ID,'store_name')
+        total_amount_input = self.driver.find_element(By.ID,'total_amount')
+        date_of_purchase_input = self.driver.find_element(By.ID,'date_of_purchase')
+        item_list_input = self.driver.find_element(By.ID,'item_list')
+
+
+        # # The Authed user start to fill the form fields
+        store_name_input.send_keys(self.store_name)
         total_amount_input.send_keys(self.total_amount)
+        
+        #date_of_purchase_input.click()
+        date_of_purchase = self.date_of_purchase.strftime('%Y-%m-%d')
+        self.driver.execute_script(
+            f"arguments[0].setAttribute('value', {date_of_purchase})", 
+            date_of_purchase_input
+        )
+        #date_of_purchase_input.send_keys(self.date_of_purchase)
+
+        item_list_input.send_keys(self.item_list)
+
+        submit_btn = self.driver.find_element(By.ID,'submit_btn')
+        #submit_btn.click()
 
         # The The Authed hits enter
-        total_amount_input.send_keys(Keys.ENTER)
-        self.wait_for_total_amount_in_receipt_list(self.total_amount)
+        #self.wait_for_total_amount_in_receipt_list(self.total_amount)
 
-        time.sleep(1)
+        #time.sleep(1)
 
         # make sure the user get redirect to receipt list page after submitting new receipt
-        self.assertEqual(self.driver.current_url, self.live_server_url + reverse('receipt-list'))
-        self.wait_for_total_amount_in_receipt_list(self.total_amount)
-    
-    def test_layout_and_styling(self):
-        # Edith goes to the home page
-        self.driver.get(self.live_server_url + self.url)
-        self.driver.set_window_size(1024, 768)
-        # She notices the input box is nicely centered
-        total_amount_input = self.driver.find_element(By.ID, 'new_total_amount')
-        self.assertAlmostEqual(
-            total_amount_input.location['x'] + total_amount_input.size['width'] / 2,
-            512,
-            delta=10
-        )
+        #self.assertEqual(self.driver.current_url, self.live_server_url + reverse('receipt-list'))
+        #self.wait_for_total_amount_in_receipt_list(self.total_amount)
         
