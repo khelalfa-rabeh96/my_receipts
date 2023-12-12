@@ -24,7 +24,7 @@ class NewReceiptTest(LiveServerTestCase):
         service = Service(executable_path=env('GECKODRIVER_PATH'))
         self.driver = webdriver.Firefox(service=service)
         self.total_amount = 2566.23
-        self.url = reverse('receipt-list')
+        self.url = reverse('new-receipt')
 
     def tearDown(self):
         self.driver.close()
@@ -48,13 +48,13 @@ class NewReceiptTest(LiveServerTestCase):
                     raise e
                 time.sleep(0.5)
 
-    def test_can_start_a_list_and_retrieve_it_later(self):
+    def test_can_create_new_receipt_and_see_it_in_receipt_list(self):
         self.driver.get(self.live_server_url + self.url)
-        self.assertIn('My Receipts', self.driver.title)
-    
-        # The Authed user finds a header text as 'My Receipts'
+        self.assertIn('New Receipt', self.driver.title)
+        
+        # The Authed user finds a header text as 'New Receipt'
         header_text = self.driver.find_element(By.TAG_NAME, 'h1').text
-        self.assertIn('My Receipts', header_text)
+        self.assertIn('New Receipt', header_text)
 
         # The Authed user invited to add a My receiptss to his list by filling the form
         # The Authed user find field to enter the total amount
@@ -67,16 +67,9 @@ class NewReceiptTest(LiveServerTestCase):
         total_amount_input.send_keys(Keys.ENTER)
         self.wait_for_total_amount_in_receipt_list(self.total_amount)
 
-        #time.sleep(1)
+        time.sleep(1)
 
         # make sure the user get redirect to receipt list page after submitting new receipt
-        # self.assertEqual(self.driver.current_url, self.live_server_url + '/')
-        # self.wait_for_total_amount_in_receipt_list(self.total_amount)
-
-        # The The Authed user adds another total amount field
-        total_amount_input = self.driver.find_element(By.ID,'new_total_amount')
-        total_amount_input.send_keys(self.total_amount + 10)
-        total_amount_input.send_keys(Keys.ENTER)
-
+        self.assertEqual(self.driver.current_url, self.live_server_url + reverse('receipt-list'))
         self.wait_for_total_amount_in_receipt_list(self.total_amount)
-        self.wait_for_total_amount_in_receipt_list(self.total_amount + 10)
+        

@@ -4,11 +4,6 @@
    <head>
     <body>
         <h1>My Receipts</h1>
-        <form method="POST">
-            <label for="new_total_amount">Total amount</label> 
-            <input name="new_total_amount" id="new_total_amount" placeholder="Enter the total amount" />
-            {% csrf_token %}
-        </form>
         <ul id="my_receipt_list">
             {% for receipt in receipts %}
                 <li class="my_receipt_item">
