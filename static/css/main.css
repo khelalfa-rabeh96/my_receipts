@@ -80,3 +80,19 @@ p > i {
     width: 30px;
     text-align: center;
 }
+
+.form-wrapper {
+    max-width: 400px;
+}
+.form-inline {
+    font-size: 0;
+}
+.form-inline .form-group {
+    width: 50%;
+}
+.form-inline .form-control {
+    width: 100%;
+}
+.subtitle {
+    opacity: 0.5;
+}
