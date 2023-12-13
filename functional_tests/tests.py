@@ -46,6 +46,34 @@ class ReceiptListTest(LiveServerTestCase):
             self.driver.current_url, 
             self.live_server_url + reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk})
         )
+    
+    def test_navigate_from_receipt_list_page_to_new_receipt_page_when_clicking_on_add_button(self):
+        self.driver.get(self.live_server_url + self.url)
+        add_btn = self.driver.find_element(By.ID,'add-receipt')
+        
+        add_btn.click()
+        
+        time.sleep(1)
+
+        self.assertEqual(
+            self.driver.current_url, 
+            self.live_server_url + reverse('receipts:new-receipt')
+        )
+    
+    def test_receipt_list_item_redirects_to_receipt_detail_on_click(self):
+        self.driver.get(self.live_server_url + self.url)
+        my_receipt_list = self.driver.find_element(By.ID,'my_receipt_list')
+        receipts = my_receipt_list.find_elements(By.CSS_SELECTOR,'li a')
+        
+        first_receipt = receipts[0]
+        first_receipt.click()
+        
+        time.sleep(1)
+
+        self.assertEqual(
+            self.driver.current_url, 
+            self.live_server_url + reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk})
+        )
 
 
 class NewReceiptTest(LiveServerTestCase):

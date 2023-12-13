@@ -2,6 +2,11 @@
 {% block title %}My Receipts{% endblock %}
 {% block content %}
 <div class="receipt_list_container">
+        <h3>
+            <a href="/receipts/new" id="add-receipt">
+                <button class="btn btn-primary btn-lg">+ Add</button>
+            </a>
+        </h3>
         <h1 class="h3">My Receipts</h1>
         <ul id="my_receipt_list" class="receipts">
             {% for receipt in receipts %}
@@ -10,8 +15,6 @@
                         <span class="item_list">{{ receipt.item_list|truncatechars:25  }}</span>
                         <span class="total_amount">${{ receipt.total_amount }}</span>
                     </a>
-                    
-                    
                 </li>
             {% endfor %}  
         </ul>
