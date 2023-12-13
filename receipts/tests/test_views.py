@@ -4,9 +4,37 @@ from django.urls import resolve
 from django.test import TestCase
 from django.urls import reverse
 
-from receipts.views import receipts_list, NewReceiptView
+from receipts.views import receipts_list, NewReceiptView, receipt_detail_view
 from receipts.models import Receipt
-from receipts.forms import ReceiptModelForm
+
+class ReceiptDetailViewTest(TestCase):
+    def setUp(self):
+        self.receipt_data = {
+            "store_name": 'KFC', 
+            "total_amount": 19.9, 
+            "date_of_purchase": datetime.date.today(),
+            "item_list": 'Fries chicken, Apple Juice, Hotdogs'
+        }
+        self.receipt = Receipt.objects.create(**self.receipt_data)
+        self.url = reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk})
+    
+    def test_root_url_resolves_to_receipts_list_view(self):
+        found = resolve(self.url)
+        self.assertEqual(found.func, receipt_detail_view)
+    
+    def test_receipt_detail_view_uses_receipt_detail_template(self):
+        response = self.client.get(self.url)
+        self.assertTemplateUsed(response, 'receipt_detail.html')
+    
+    def test_receipt_view_displays_receipts_details(self):
+        response = self.client.get(self.url)
+        self.assertIn(self.receipt.store_name, response.content.decode())
+        self.assertIn(f'{self.receipt.total_amount}', response.content.decode())
+        # Date should be displayed as 'Dec. 15, 2023'
+        self.assertIn(f'{self.receipt.date_of_purchase.strftime("%b. %d, %Y")}', response.content.decode())
+        self.assertIn(self.receipt.item_list, response.content.decode())
+
+    
 
 class ReceiptListTest(TestCase):
     def setUp(self):

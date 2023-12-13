@@ -100,4 +100,7 @@ class NewListTest(LiveServerTestCase):
 
         # make sure the user get redirect to receipt list page after submitting new receipt
         self.assertEqual(self.driver.current_url, self.live_server_url + reverse('receipts:receipt-list'))
-        self.wait_and_check_for_new_receipt_in_receipt_list()    
+        self.wait_and_check_for_new_receipt_in_receipt_list() 
+
+        self.check_for_successful_message_after_creating_new_receipt()   
+

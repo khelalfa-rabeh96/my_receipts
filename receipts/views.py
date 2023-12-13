@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.views import View
@@ -33,3 +33,9 @@ class NewReceiptView(View):
             messages.error(request, "Some data is not valid.")
             context = {"form": form}
             return render(request, self.template_name, context)
+
+
+def receipt_detail_view(request, pk):
+    if request.method == "GET":
+        receipt = get_object_or_404(Receipt, pk=pk)
+        return render(request, "receipt_detail.html", {"receipt": receipt})

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}My Receipts{% endblock %}
+{% block content %}
+<div class="receipt_detail_container" style="max-witdh: 400px">
+    <div class="receipt_header">
+        <h1>Receipt of Sale <span>{{ receipt.store_name }}</span></h1>
+    </div>
+    <div class="receipt_body">
+        <div class="date_time_con text-center">
+            <div class="date">{{ receipt.date_of_purchase }}</div>
+        </div>
+        <div class="items text-wrap">
+            {{ receipt.item_list }}
+        </div>
+        <li class="my_receipt_item item d-flex flex-row justify-content-between">
+            <span class="total">Total</span>
+            <span class="total_amount">${{ receipt.total_amount }}</span>
+        </li>
+    </div>
+</div>
+{% endblock %}

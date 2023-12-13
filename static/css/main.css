@@ -3,9 +3,7 @@ a{
     color: #ff8c3a;
 }
 
-.wrap{
-    padding-top: 20px;
-}
+
 nav{
     box-shadow: 1px 1px 1px #cecece;
 }
@@ -15,6 +13,9 @@ nav{
     color: initial;
 }
 
+#content{
+    padding-top: 20px;
+}
 #content .h3 button {
     margin-right: 10px;
 }
@@ -46,29 +47,33 @@ nav{
     background-color: white;
 }
 
-ul.receipts {
+ul.receipts , ul.receipt_detail{
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-ul.receipts li{
+ul.receipts li, ul.receipt_detai li{
     max-width: 400px;
 }
-  ul.receipts > li > a {
+  ul.receipts > li > a,
+  ul.receipt_detail  > li > a {
     margin-bottom: 15px;
     display: flex;
     color: initial;
     text-decoration: initial;
 }
-  ul.receipts > li > a > i {
+  ul.receipts > li > a > i,
+  ul.receipt_detail > li > a {
     padding: 7px 10px 0;
 }
-  ul.receipts > li:hover {
+  ul.receipts > li:hover,
+  ul.receipt_detail > li:hover {
     color: orange;
     cursor: pointer;
 }
-  ul.receipts > li:hover h5 {
+  ul.receipts > li:hover h5,
+  ul.receipt_detail > li:hover h5 {
     color: orange;
 }
 .item {
@@ -102,4 +107,44 @@ p > i {
 }
 .subtitle {
     opacity: 0.5;
+}
+
+.receipt_header {
+    padding-bottom: 40px;
+    border-bottom: 1px dashed #000;
+    text-align: center;
+}
+
+.receipt_header h1 {
+    font-size: 20px;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.receipt_header h1 span {
+    display: block;
+    font-size: 25px;
+}
+
+.receipt_header h2 {
+    font-size: 14px;
+    color: #727070;
+    font-weight: 300;
+}
+
+.receipt_header h2 span {
+    display: block;
+}
+
+.receipt_detail_container{
+    max-width: 400px;
+    margin-right: auto;
+    margin-left: auto;
+    border: 1px solid #ccc;
+    padding: 32px;
+    box-shadow: 1px 1px 1px #ccc;
+}
+
+.receipt_detail_container .receipt_body > * {
+   margin-top: 15px;
 }
