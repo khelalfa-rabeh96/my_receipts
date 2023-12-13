@@ -1,8 +1,8 @@
-from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.views import View
+from django.contrib import messages
 
 
 from .models import Receipt
@@ -18,14 +18,18 @@ class NewReceiptView(View):
 
     def get(self, request, *args, **kwargs):
         form = ReceiptModelForm()
-        context = {"form": form}
+        _messages = messages.get_messages(request)
+        context = {"form": form, "messages": _messages}
         return render(request, self.template_name, context)
     
     def post(self, request, *args, **kwargs):
         form = ReceiptModelForm(request.POST or None)
         if form.is_valid():
             form.save()
-            return HttpResponseRedirect(reverse('receipts:receipt-list'))
+            messages.success(request, "An new receipt was created successfully.")
+            _messages = messages.get_messages(request)
+            return redirect(reverse('receipts:receipt-list'),  kwargs={"messages": _messages})
         else:
+            messages.error(request, "Some data is not valid.")
             context = {"form": form}
             return render(request, self.template_name, context)

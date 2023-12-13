@@ -58,6 +58,10 @@ class NewListTest(LiveServerTestCase):
                     raise e
                 time.sleep(0.5)
 
+    def check_for_successful_message_after_creating_new_receipt(self):
+        flash_messages = self.driver.find_element(By.ID,'flash_messages')
+        self.assertIn("An new receipt was created successfully", flash_messages.text)
+
     def test_can_create_new_receipt_and_see_it_in_receipt_list(self):
         self.driver.get(self.live_server_url + self.url)
         self.assertIn('New Receipt', self.driver.title)
@@ -96,5 +100,4 @@ class NewListTest(LiveServerTestCase):
 
         # make sure the user get redirect to receipt list page after submitting new receipt
         self.assertEqual(self.driver.current_url, self.live_server_url + reverse('receipts:receipt-list'))
-        self.wait_and_check_for_new_receipt_in_receipt_list()
-        
+        self.wait_and_check_for_new_receipt_in_receipt_list()    

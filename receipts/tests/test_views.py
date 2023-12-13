@@ -88,7 +88,7 @@ class NewReceiptTest(TestCase):
         response = self.client.post(self.url, data=data)
         self.assertEqual(Receipt.objects.count(), 0)
     
-    def test_stay_at_new_receipt_page_after_unsuccessfuly_POST_new_receipt(self):
+    def test_stay_at_new_receipt_page_after_unsuccessfuly_POST_new_receipt_due_to_form_validation(self):
         data = {}
         response = self.client.post(self.url, data=data)
         self.assertTemplateUsed(response, 'new_receipt.html')

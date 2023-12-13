@@ -3,6 +3,9 @@ a{
     color: #ff8c3a;
 }
 
+.wrap{
+    padding-top: 20px;
+}
 nav{
     box-shadow: 1px 1px 1px #cecece;
 }
