@@ -1,3 +1,5 @@
+import datetime
+
 from django.urls import resolve
 from django.test import TestCase
 from django.urls import reverse
@@ -44,14 +46,21 @@ class NewReceiptTest(TestCase):
         self.assertTemplateUsed(response, 'new_receipt.html')
     
     def test_new_receipt_view_can_save_a_POST_request(self):
-        data = {'store_name': 'Walmart', 'total_amount': 1000 , "item_list": "item1, item2"}
+        data = {
+            'store_name': 'Walmart', 
+            'total_amount': 1000 , 
+            'date_of_purchase': datetime.date.today(),
+            "item_list": "item1, item2",
+        }
         self.client.post(self.url, data=data)
         
         self.assertEqual(Receipt.objects.count(), 1)
         receipt = Receipt.objects.first()
-        self.assertEqual(receipt.total_amount, data['total_amount'])
-        self.assertEqual(receipt.item_list, data['item_list'])
         self.assertEqual(receipt.store_name, data['store_name'])
+        self.assertEqual(receipt.total_amount, data['total_amount'])
+        self.assertEqual(receipt.date_of_purchase, data['date_of_purchase'])
+        self.assertEqual(receipt.item_list, data['item_list'])
+        
     
     def test_redirects_after_successful_POST_new_receipt_to_receipt_list(self):
         data = data={'store_name': 'Walmart', 'total_amount': 1000, 'item_list': 'item1, item2'}
