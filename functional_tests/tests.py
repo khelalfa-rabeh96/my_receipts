@@ -14,13 +14,41 @@ from selenium.common.exceptions import WebDriverException
 
 import environ
 
+from receipts.models import Receipt
+
 env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env()
 
 MAX_WAIT = 10
 
 
-class NewListTest(LiveServerTestCase):
+class ReceiptListTest(LiveServerTestCase):
+    def setUp(self):
+        service = Service(executable_path=env('GECKODRIVER_PATH'))
+        self.driver = webdriver.Firefox(service=service)
+        self.receipt = Receipt.objects.create(store_name="KFC", item_list="item1")
+        self.url = reverse('receipts:receipt-list')
+    
+    def tearDown(self):
+        self.driver.close()
+    
+    def test_receipt_list_item_redirects_to_receipt_detail_on_click(self):
+        self.driver.get(self.live_server_url + self.url)
+        my_receipt_list = self.driver.find_element(By.ID,'my_receipt_list')
+        receipts = my_receipt_list.find_elements(By.CSS_SELECTOR,'li a')
+        
+        first_receipt = receipts[0]
+        first_receipt.click()
+        
+        time.sleep(1)
+
+        self.assertEqual(
+            self.driver.current_url, 
+            self.live_server_url + reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk})
+        )
+
+
+class NewReceiptTest(LiveServerTestCase):
     def setUp(self):
         service = Service(executable_path=env('GECKODRIVER_PATH'))
         self.driver = webdriver.Firefox(service=service)

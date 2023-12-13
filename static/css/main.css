@@ -67,15 +67,12 @@ ul.receipts li, ul.receipt_detai li{
   ul.receipt_detail > li > a {
     padding: 7px 10px 0;
 }
-  ul.receipts > li:hover,
+  ul.receipts > li a:hover,
   ul.receipt_detail > li:hover {
     color: orange;
     cursor: pointer;
 }
-  ul.receipts > li:hover h5,
-  ul.receipt_detail > li:hover h5 {
-    color: orange;
-}
+
 .item {
     padding: 5px 5px 5px;
     flex: 1;
