@@ -20,7 +20,7 @@ class ReceiptListTest(TestCase):
         response = self.client.get(self.url)
         self.assertTemplateUsed(response, 'receipt_list.html')
 
-    def test_displays_all_receipt_receipt(self):
+    def test_displays_all_receipts_with_item_list_and_total_amount(self):
         Receipt.objects.create(store_name="walmart", total_amount=1000, item_list="item1, item2")
         Receipt.objects.create(store_name='KFC', total_amount=2000, item_list="item3, item4")
 
@@ -31,6 +31,14 @@ class ReceiptListTest(TestCase):
 
         self.assertIn('2000', response.content.decode())
         self.assertIn('item3, item4', response.content.decode())
+    
+    def test_receipt_list_displays_only_first_25_chars_from_item_list_while_the_rest_continued_with_dots(self):
+        item_list = "12345678901234567890123456789"
+        expected_item_list_displayed = "123456789012345678901234…"
+        Receipt.objects.create(store_name='KFC', total_amount=2000, item_list=item_list)
+        response = self.client.get(self.url)
+        self.assertIn(expected_item_list_displayed, response.content.decode())
+
 
 
 class NewReceiptTest(TestCase):
