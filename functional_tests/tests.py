@@ -32,6 +32,14 @@ class ReceiptListTest(LiveServerTestCase):
     def tearDown(self):
         self.driver.close()
     
+    def test_navigating_to_home_redirects_you_to_receipts_list_page(self):
+        self.driver.get(self.live_server_url)
+        time.sleep(1)
+        self.assertEqual(
+            self.driver.current_url, 
+            self.live_server_url + reverse('receipts:receipt-list')
+        )
+    
     def test_receipt_list_item_redirects_to_receipt_detail_on_click(self):
         self.driver.get(self.live_server_url + self.url)
         my_receipt_list = self.driver.find_element(By.ID,'my_receipt_list')
@@ -47,7 +55,7 @@ class ReceiptListTest(LiveServerTestCase):
             self.live_server_url + reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk})
         )
     
-    def test_navigate_from_receipt_list_page_to_new_receipt_page_when_clicking_on_add_button(self):
+    def test_navigate_from_receipt_list_page_to_new_receipt_page_when_clicking_ona_add_button(self):
         self.driver.get(self.live_server_url + self.url)
         add_btn = self.driver.find_element(By.ID,'add-receipt')
         

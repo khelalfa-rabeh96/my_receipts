@@ -8,6 +8,9 @@ from django.contrib import messages
 from .models import Receipt
 from .forms import ReceiptModelForm
 
+def home(request):
+    return redirect(reverse("receipts:receipt-list"))
+
 def receipts_list(request):
     receipts = Receipt.objects.all()
     return render(request, 'receipt_list.html', {'receipts': receipts})
