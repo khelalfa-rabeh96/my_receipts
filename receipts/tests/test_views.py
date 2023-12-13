@@ -33,7 +33,11 @@ class ReceiptDetailViewTest(TestCase):
         # Date should be displayed as 'Dec. 15, 2023'
         self.assertIn(f'{self.receipt.date_of_purchase.strftime("%b. %d, %Y")}', response.content.decode())
         self.assertIn(self.receipt.item_list, response.content.decode())
-
+    
+    def test_get_non_existed_receipt_redirects_to_404_page(self):
+        after_last_id = Receipt.objects.count() + 1
+        response = self.client.get(reverse('receipts:receipt-detail', kwargs={'pk': after_last_id}))
+        self.assertTemplateUsed(response, '404.html')
     
 
 class ReceiptListTest(TestCase):

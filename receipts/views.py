@@ -37,5 +37,8 @@ class NewReceiptView(View):
 
 def receipt_detail_view(request, pk):
     if request.method == "GET":
-        receipt = get_object_or_404(Receipt, pk=pk)
-        return render(request, "receipt_detail.html", {"receipt": receipt})
+        try:
+            receipt = get_object_or_404(Receipt, pk=pk)
+            return render(request, "receipt_detail.html", {"receipt": receipt})
+        except:
+            return render(request, "404.html")
