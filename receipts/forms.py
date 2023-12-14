@@ -19,4 +19,8 @@ class RegisterModelFOrm(UserCreationForm):
     class Meta:
         model = User
         fields = ['username', 'password1']
-        exclude = ('password2',)
+
+
+class LoginForm(forms.Form):
+    username = forms.CharField()
+    password = forms.CharField(widget=forms.PasswordInput)

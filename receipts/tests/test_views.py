@@ -4,8 +4,10 @@ from django.urls import resolve
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.contrib import auth
 
 from receipts.views import (
+    user_login,
     user_register,
     receipts_list, 
     receipt_detail_view, 
@@ -86,6 +88,57 @@ class TestRegister(TestCase):
         self.assertIn("password2", response.context['form'].errors)
         self.assertEqual(User.objects.count(), 0)
      
+
+class TestRegister(TestCase):
+    def setUp(self):
+        self.url = reverse('user-login')
+        
+        self.user_credentials = {'username': "test_username", "password": "Secret-password-1234"}
+        user = User.objects.create(username=self.user_credentials["username"])
+        user.set_password(self.user_credentials["password"])
+        user.save()
+
+        self.user = user
+    
+    def test_login_url_resolves_to_login_view(self):
+        found = resolve(self.url)
+        self.assertEqual(found.func, user_login)
+    
+    def test_login_view_uses_login_tempalte(self):
+        response = self.client.get(self.url)
+        self.assertTemplateUsed(response, 'login.html')
+    
+    def test_unexisted_user_can_not_login(self):
+        unknown_user_credentials = {'username': "uknown", "password": "uknown"}
+        response = self.client.post(self.url, data=unknown_user_credentials)
+
+        user = auth.get_user(self.client)
+        self.assertFalse(user.is_authenticated)
+
+        # The error message appears in the flash message not in the form, since the form is valid
+        self.assertIn("Username or password incorrect", response.content.decode())
+    
+    def test_user_with_incorrect_password_can_not_login(self):
+        user_credentials = {'username': self.user.username, "password": "uknown"}
+        response = self.client.post(self.url, data=user_credentials)
+
+        user = auth.get_user(self.client)
+        self.assertFalse(user.is_authenticated)
+
+        # The error message appears in the flash message not in the form, since the form is valid
+        self.assertIn("Username or password incorrect", response.content.decode())
+    
+    def test_user_can_login_with_correct_username_and_password(self):
+        self.client.post(self.url, data=self.user_credentials)
+
+        user = auth.get_user(self.client)
+        self.assertTrue(user.is_authenticated)
+    
+    def test_redirect_user_to_receipt_list_after_successful_login(self):
+        response = self.client.post(self.url, data=self.user_credentials)
+        self.assertRedirects(response, reverse('receipts:receipt-list'))
+
+
 
 class ReceiptListTest(TestCase):
     def setUp(self):

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="form-wrapper">
+    <h1 class="h3">Login</h1>
+    <form method="POST" class="form">{% csrf_token %}
+
+        <!-- Username Form Group -->
+        <div class="form-group">
+            <label for="store_name">Username</label>
+            <input 
+                type='text' class="form-control" id="username" 
+                name="username" required autofocus
+                {% if form.is_bound %}value="{{ form.username.value }}"{% endif %}
+            />
+            {% for err in form.username.errors %}
+            <small class="text-danger ml-2">{{ err }}</small><br>
+            {% endfor %}
+        </div>
+
+       <!-- Password Form Group -->
+       <div class="form-group">
+            <label for="store_name">Password</label>
+            <input 
+                type='password' class="form-control" id="password" 
+                name="password" required autofocus
+                {% if form.is_bound %}value="{{ form.password.value }}"{% endif %}
+            />
+            {% for err in form.password.errors %}
+            <small class="text-danger ml-2">{{ err }}</small><br>
+            {% endfor %}
+        </div>
+      
+        <input id="submit_btn" type="submit" value="Login" class="btn btn-primary btn-lg btn-block">
+    </form>
+</div>
+{% endblock %}

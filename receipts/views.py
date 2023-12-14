@@ -2,10 +2,10 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.views import View
 from django.contrib import messages
-
+from django.contrib.auth import authenticate, login
 
 from .models import Receipt
-from .forms import ReceiptModelForm, UserCreationForm
+from .forms import ReceiptModelForm, UserCreationForm, LoginForm
 
 def home(request):
     return redirect(reverse("receipts:receipt-list"))
@@ -24,6 +24,25 @@ def user_register(request):
     else:
         form = UserCreationForm()
     return render(request, 'register.html', {'form': form})
+
+
+def user_login(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(request, username=username, password=password)
+            if user:
+                login(request, user)    
+                messages.success(request, 'User logged-in successfully')
+                return redirect(reverse('receipts:receipt-list'))
+            else:
+                messages.error(request, 'Username or password incorrect')
+    else:
+        form = LoginForm()
+    return render(request, 'login.html', {'form': form})
+
 
 
 def receipts_list(request):
