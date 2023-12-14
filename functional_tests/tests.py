@@ -21,6 +21,8 @@ environ.Env.read_env()
 
 MAX_WAIT = 10
 
+
+# Shared Setup for webdriver
 class BaseTest(LiveServerTestCase):
     def setUp(self):
         service = Service(executable_path=env('GECKODRIVER_PATH'))
@@ -44,29 +46,29 @@ class ReceiptListTest(BaseTest):
             self.live_server_url + reverse('receipts:receipt-list')
         )
     
-    def test_receipt_list_item_redirects_to_receipt_detail_when_click_on_it(self):
+    def test_click_on_items_in_receipt_list_will_redirects_you_to_receipt_detail(self):
         self.driver.get(self.live_server_url + self.url)
         my_receipt_list = self.driver.find_element(By.ID,'my_receipt_list')
-        receipts = my_receipt_list.find_elements(By.CSS_SELECTOR,'li a')
         
+        # Get the first item in receipt list and click on it
+        receipts = my_receipt_list.find_elements(By.CSS_SELECTOR,'li a')
         first_receipt = receipts[0]
         first_receipt.click()
         
         time.sleep(1)
-
         self.assertEqual(
             self.driver.current_url, 
             self.live_server_url + reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk})
         )
     
-    def test_navigate_from_receipt_list_page_to_new_receipt_page_when_clicking_ona_add_button(self):
+    def test_navigate_from_receipt_list_page_to_new_receipt_page_when_clicking_on_add_button(self):
         self.driver.get(self.live_server_url + self.url)
+
+        # Get the add btn and click on it
         add_btn = self.driver.find_element(By.ID,'add-receipt')
-        
         add_btn.click()
         
         time.sleep(1)
-
         self.assertEqual(
             self.driver.current_url, 
             self.live_server_url + reverse('receipts:new-receipt')
@@ -85,17 +87,18 @@ class NewReceiptTest(BaseTest):
     def tearDown(self):
         self.driver.close()
 
-    def get_number_with_two_decimal_places(self, number):
+    def format_number_to_display_only_two_decimal_places(self, number):
         return format(Decimal(number), '.2f')
 
     def wait_and_check_for_new_receipt_in_receipt_list(self):
         start_time = time.time()
         while True:
             try:
+                # Check if an item with 'self.item_list' and 'self.total_amount' exists in receipt list page
                 my_receipt_list = self.driver.find_element(By.ID,'my_receipt_list')
                 receipts = my_receipt_list.find_elements(By.TAG_NAME,'li')
                 self.assertIn(
-                    self.get_number_with_two_decimal_places(self.total_amount), 
+                    self.format_number_to_display_only_two_decimal_places(self.total_amount), 
                     [row.text for row in receipts][-1]
                 )
 
@@ -114,11 +117,11 @@ class NewReceiptTest(BaseTest):
         flash_messages = self.driver.find_element(By.ID,'flash_messages')
         self.assertIn("An new receipt was created successfully", flash_messages.text)
 
-    def test_can_create_new_receipt_and_see_it_in_receipt_list(self):
+    def test_can_create_new_receipt_and_and_that_it_has_been_added_to_receipt_list(self):
         self.driver.get(self.live_server_url + self.url)
         self.assertIn('New Receipt', self.driver.title)
         
-        # The Authed user finds a header text as 'New Receipt'
+        # The user finds a header text as 'New Receipt'
         header_text = self.driver.find_element(By.TAG_NAME, 'h1').text
         self.assertIn('New Receipt', header_text)
 
@@ -129,11 +132,11 @@ class NewReceiptTest(BaseTest):
         item_list_input = self.driver.find_element(By.ID,'item_list')
 
 
-        # # The Authed user start to fill the form fields
+        # The user start to fill the form fields
         store_name_input.send_keys(self.store_name)
         total_amount_input.send_keys(self.total_amount)
         
-        #date_of_purchase_input.click()
+        # date picker field required 'yyyy-mm-dd-' date format
         date_of_purchase = self.date_of_purchase.strftime('%Y-%m-%d')
         self.driver.execute_script(
             f"arguments[0].setAttribute('value', '{date_of_purchase}')", 
@@ -141,11 +144,9 @@ class NewReceiptTest(BaseTest):
         )
         item_list_input.send_keys(self.item_list)
         
-        # The The Authed hits enter
+        # The user hits enter
         submit_btn = self.driver.find_element(By.ID,'submit_btn')
         submit_btn.click()
-
-        #self.wait_for_total_amount_in_receipt_list(self.total_amount)
 
         time.sleep(1)
 
