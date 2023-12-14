@@ -1,6 +1,5 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
-from django.core.exceptions import ValidationError
 from django.views import View
 from django.contrib import messages
 
@@ -48,23 +47,26 @@ def receipt_detail_view(request, pk):
         return render(request, "receipt_detail.html", {"receipt": receipt})
 
 
-class ReceiptEditView(View):
-    def get(self, request, *args, **kwargs):
+class ReceiptMixinObject:
+    def get_object(self, request):
         try:
             receipt = get_object_or_404(Receipt, pk=self.kwargs.get('pk'))
         except:
             return render(request, "404.html")
+        
+        return receipt
+
+    
+class ReceiptEditView(View, ReceiptMixinObject):
+    def get(self, request, *args, **kwargs):
+        receipt = self.get_object(request)
 
         form = ReceiptModelForm(instance=receipt)
         context = {"form": form, "receipt": receipt}
         return render(request, 'receipt_edit.html', context)
 
     def post(self, request, *args, **kwargs):
-        try:
-            receipt = get_object_or_404(Receipt, pk=self.kwargs.get('pk'))
-        except:
-            return render(request, "404.html")
-
+        receipt = self.get_object(request)
         form = ReceiptModelForm(request.POST or None, instance=receipt)
 
         if form.is_valid():
@@ -78,23 +80,16 @@ class ReceiptEditView(View):
             return render(request, 'receipt_edit.html', context)
 
 
-class ReceiptDeleteView(View):
+class ReceiptDeleteView(View, ReceiptMixinObject):
     tempalate_name = 'receipt_delete.html'
 
     def get(self, request, *args, **kwargs):
-        try:
-            receipt = get_object_or_404(Receipt, pk=self.kwargs.get('pk'))
-        except:
-            return render(request, "404.html")
+        receipt = self.get_object(request)
         context = {"receipt": receipt}
         return render(request, self.tempalate_name, context=context)
     
     def post(self, request, *args, **kwargs):
-        try:
-            receipt = get_object_or_404(Receipt, pk=self.kwargs.get('pk'))
-        except:
-            return render(request, "404.html")
-        
+        receipt = self.get_object(request)
         receipt.delete()
         messages.success(request, "This receipt was deleted successfully.")
         return redirect(reverse('receipts:receipt-list'))
