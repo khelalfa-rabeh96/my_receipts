@@ -20,17 +20,16 @@ class NewReceiptView(View):
 
     def get(self, request, *args, **kwargs):
         form = ReceiptModelForm()
-        _messages = messages.get_messages(request)
-        context = {"form": form, "messages": _messages}
+        context = {"form": form}
         return render(request, self.template_name, context)
     
     def post(self, request, *args, **kwargs):
         form = ReceiptModelForm(request.POST or None)
+        
         if form.is_valid():
             form.save()
             messages.success(request, "An new receipt was created successfully.")
-            _messages = messages.get_messages(request)
-            return redirect(reverse('receipts:receipt-list'),  kwargs={"messages": _messages})
+            return redirect(reverse('receipts:receipt-list'))
         else:
             messages.error(request, "Some data is not valid.")
             context = {"form": form}
@@ -47,6 +46,7 @@ def receipt_detail_view(request, pk):
         return render(request, "receipt_detail.html", {"receipt": receipt})
 
 
+# Get receipt object by pk or redirect to 404 page if not exists
 class ReceiptMixinObject:
     def get_object(self, request):
         try:
@@ -58,12 +58,14 @@ class ReceiptMixinObject:
 
     
 class ReceiptEditView(View, ReceiptMixinObject):
+    template_name = 'receipt_edit.html'
+
     def get(self, request, *args, **kwargs):
         receipt = self.get_object(request)
-
         form = ReceiptModelForm(instance=receipt)
         context = {"form": form, "receipt": receipt}
-        return render(request, 'receipt_edit.html', context)
+
+        return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         receipt = self.get_object(request)
@@ -77,7 +79,7 @@ class ReceiptEditView(View, ReceiptMixinObject):
         else:
             context = {"form": form}
             messages.warning(request, "Some data is not valid")
-            return render(request, 'receipt_edit.html', context)
+            return render(request, self.template_name, context)
 
 
 class ReceiptDeleteView(View, ReceiptMixinObject):
