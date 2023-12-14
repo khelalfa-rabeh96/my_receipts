@@ -40,7 +40,7 @@ class ReceiptListTest(LiveServerTestCase):
             self.live_server_url + reverse('receipts:receipt-list')
         )
     
-    def test_receipt_list_item_redirects_to_receipt_detail_on_click(self):
+    def test_receipt_list_item_redirects_to_receipt_detail_when_click_on_it(self):
         self.driver.get(self.live_server_url + self.url)
         my_receipt_list = self.driver.find_element(By.ID,'my_receipt_list')
         receipts = my_receipt_list.find_elements(By.CSS_SELECTOR,'li a')
@@ -68,21 +68,6 @@ class ReceiptListTest(LiveServerTestCase):
             self.live_server_url + reverse('receipts:new-receipt')
         )
     
-    def test_receipt_list_item_redirects_to_receipt_detail_on_click(self):
-        self.driver.get(self.live_server_url + self.url)
-        my_receipt_list = self.driver.find_element(By.ID,'my_receipt_list')
-        receipts = my_receipt_list.find_elements(By.CSS_SELECTOR,'li a')
-        
-        first_receipt = receipts[0]
-        first_receipt.click()
-        
-        time.sleep(1)
-
-        self.assertEqual(
-            self.driver.current_url, 
-            self.live_server_url + reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk})
-        )
- 
 
 class NewReceiptTest(LiveServerTestCase):
     def setUp(self):
@@ -188,6 +173,39 @@ class ReceiptDetailTest(LiveServerTestCase):
         self.assertEqual(
             self.driver.current_url, 
             self.live_server_url + reverse('receipts:receipt-edit', kwargs={'pk': self.receipt.pk})
+        )
+    
+    def test_can_navigate_from_receipt_detail_page_to_receipt_delete_page(self):
+        self.driver.get(self.live_server_url + self.url)
+        receipt_edit_btn = self.driver.find_element(By.ID,'receipt-delete')        
+        receipt_edit_btn.click()
+        
+        time.sleep(1)
+
+        self.assertEqual(
+            self.driver.current_url, 
+            self.live_server_url + reverse('receipts:receipt-delete', kwargs={'pk': self.receipt.pk})
+        )
+
+class ReceiptDeleteTest(LiveServerTestCase):
+    def setUp(self):
+        service = Service(executable_path=env('GECKODRIVER_PATH'))
+        self.driver = webdriver.Firefox(service=service)
+        self.receipt = Receipt.objects.create(store_name="KFC", item_list="item1")
+        self.url = reverse('receipts:receipt-delete', kwargs={'pk': self.receipt.pk})
+    
+    def tearDown(self):
+        self.driver.close()
+
+    def test_get_back_from_receipt_delete_view_to_receipt_detail_view_via_cancel_btn(self):
+        self.driver.get(self.live_server_url + self.url)
+        cancel_delete = self.driver.find_element(By.ID,'cancel-delete')
+        
+        cancel_delete.click()
+        time.sleep(1)
+        self.assertEqual(
+            self.driver.current_url, 
+            self.live_server_url + reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk})
         )
     
 

@@ -75,4 +75,26 @@ class ReceiptEditView(View):
         else:
             context = {"form": form}
             messages.warning(request, "Some data is not valid")
-            return render(request, self.template_name, context)
+            return render(request, 'receipt_edit.html', context)
+
+
+class ReceiptDeleteView(View):
+    tempalate_name = 'receipt_delete.html'
+
+    def get(self, request, *args, **kwargs):
+        try:
+            receipt = get_object_or_404(Receipt, pk=self.kwargs.get('pk'))
+        except:
+            return render(request, "404.html")
+        context = {"receipt": receipt}
+        return render(request, self.tempalate_name, context=context)
+    
+    def post(self, request, *args, **kwargs):
+        try:
+            receipt = get_object_or_404(Receipt, pk=self.kwargs.get('pk'))
+        except:
+            return render(request, "404.html")
+        
+        receipt.delete()
+        messages.success(request, "This receipt was deleted successfully.")
+        return redirect(reverse('receipts:receipt-list'))

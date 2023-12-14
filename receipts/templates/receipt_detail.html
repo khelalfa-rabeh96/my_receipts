@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}My Receipts{% endblock %}
+{% block title %}Edit Receipt{% endblock %}
 {% block content %}
 <div class="receipt_detail_container" style="max-witdh: 400px">
     <div class="receipt_header">
@@ -19,6 +19,7 @@
     </div>
     <div style="margin-top:15px">
         <a id="receipt-edit" class="btn btn-warning" href="{{ receipt.pk }}/edit">Edit</a>
+        <a id="receipt-delete" class="btn btn-danger" href="{{ receipt.pk }}/delete">Delete</a>
     </div>
    
 </div>

@@ -161,6 +161,31 @@ class ReceiptEditView(TestCase):
         self.assertEqual(receipt.date_of_purchase, updated_data['date_of_purchase'])
         self.assertEqual(receipt.item_list, updated_data['item_list'])
     
-    def test_redirects_after_successful_POST_new_receipt_to_receipt_list(self):
+    def test_redirects_after_successful_POST_edit_receipt_to_receipt_detail_view(self):
         response = self.client.post(self.url, self.receipt_data)
         self.assertRedirects(response, reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk}))
+
+
+class ReceipDeleteView(TestCase):
+    def setUp(self):
+        self.receipt_data = {
+            "store_name": 'KFC', 
+            "total_amount": 19.9, 
+            "date_of_purchase": datetime.date.today(),
+            "item_list": 'Fries chicken, Apple Juice, Hotdogs'
+        }
+        self.receipt = Receipt.objects.create(**self.receipt_data)
+        self.url = reverse('receipts:receipt-delete', kwargs={'pk': self.receipt.pk})
+    
+
+    def test_receipt_delete_view_uses_receipt_delete_template(self):
+        response = self.client.get(self.url)
+        self.assertTemplateUsed(response, 'receipt_delete.html')
+    
+    def test_receipt_delete_view_POST_can_delete_a_receipt(self):
+        response = self.client.post(self.url, {})
+        self.assertEqual(Receipt.objects.filter(pk=self.receipt.pk).count(), 0)
+    
+    def test_receipt_delete_view_redirects_to_receipt_list_view_after_successfuly_delete_a_receipt(self):
+        response = self.client.post(self.url, {})
+        self.assertRedirects(response, reverse('receipts:receipt-list'))
