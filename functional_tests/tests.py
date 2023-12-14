@@ -21,17 +21,21 @@ environ.Env.read_env()
 
 MAX_WAIT = 10
 
-
-class ReceiptListTest(LiveServerTestCase):
+class BaseTest(LiveServerTestCase):
     def setUp(self):
         service = Service(executable_path=env('GECKODRIVER_PATH'))
         self.driver = webdriver.Firefox(service=service)
+
+
+class ReceiptListTest(BaseTest):
+    def setUp(self):
+        super(ReceiptListTest, self).setUp()
         self.receipt = Receipt.objects.create(store_name="KFC", item_list="item1")
         self.url = reverse('receipts:receipt-list')
     
     def tearDown(self):
         self.driver.close()
-    
+
     def test_navigating_to_home_redirects_you_to_receipts_list_page(self):
         self.driver.get(self.live_server_url)
         time.sleep(1)
@@ -69,19 +73,18 @@ class ReceiptListTest(LiveServerTestCase):
         )
     
 
-class NewReceiptTest(LiveServerTestCase):
+class NewReceiptTest(BaseTest):
     def setUp(self):
-        service = Service(executable_path=env('GECKODRIVER_PATH'))
-        self.driver = webdriver.Firefox(service=service)
+        super(NewReceiptTest, self).setUp()
         self.store_name = "Walmart"
         self.total_amount = 2566.2
         self.date_of_purchase = datetime.date.today()
         self.item_list = "Apple, Banana, Orange"
         self.url = reverse('receipts:new-receipt')
-
+    
     def tearDown(self):
         self.driver.close()
-    
+
     def get_number_with_two_decimal_places(self, number):
         return format(Decimal(number), '.2f')
 
@@ -153,16 +156,15 @@ class NewReceiptTest(LiveServerTestCase):
         self.check_for_successful_message_after_creating_new_receipt()   
 
 
-class ReceiptDetailTest(LiveServerTestCase):
+class ReceiptDetailTest(BaseTest):
     def setUp(self):
-        service = Service(executable_path=env('GECKODRIVER_PATH'))
-        self.driver = webdriver.Firefox(service=service)
+        super(ReceiptDetailTest, self).setUp()
         self.receipt = Receipt.objects.create(store_name="KFC", item_list="item1")
         self.url = reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk})
     
     def tearDown(self):
         self.driver.close()
-    
+
     def test_can_navigate_from_receipt_detail_page_to_receipt_edit_page(self):
         self.driver.get(self.live_server_url + self.url)
         receipt_edit_btn = self.driver.find_element(By.ID,'receipt-edit')        
@@ -187,13 +189,12 @@ class ReceiptDetailTest(LiveServerTestCase):
             self.live_server_url + reverse('receipts:receipt-delete', kwargs={'pk': self.receipt.pk})
         )
 
-class ReceiptDeleteTest(LiveServerTestCase):
+class ReceiptDeleteTest(BaseTest):
     def setUp(self):
-        service = Service(executable_path=env('GECKODRIVER_PATH'))
-        self.driver = webdriver.Firefox(service=service)
+        super(ReceiptDeleteTest, self).setUp()
         self.receipt = Receipt.objects.create(store_name="KFC", item_list="item1")
         self.url = reverse('receipts:receipt-delete', kwargs={'pk': self.receipt.pk})
-    
+
     def tearDown(self):
         self.driver.close()
 
@@ -209,16 +210,15 @@ class ReceiptDeleteTest(LiveServerTestCase):
         )
     
 
-class ReceiptEditTest(LiveServerTestCase):
+class ReceiptEditTest(BaseTest):
     def setUp(self):
-        service = Service(executable_path=env('GECKODRIVER_PATH'))
-        self.driver = webdriver.Firefox(service=service)
+        super(ReceiptEditTest, self).setUp()
         self.receipt = Receipt.objects.create(store_name="KFC", item_list="item1")
         self.url = reverse('receipts:receipt-edit', kwargs={'pk': self.receipt.pk})
     
     def tearDown(self):
         self.driver.close()
-    
+
     def test_receipt_form_edit_fields_are_bounded_with_receipt_properties(self):
         self.driver.get(self.live_server_url + self.url)
         store_name_input = self.driver.find_element(By.ID,'store_name')
