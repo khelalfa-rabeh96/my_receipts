@@ -5,10 +5,26 @@ from django.contrib import messages
 
 
 from .models import Receipt
-from .forms import ReceiptModelForm
+from .forms import ReceiptModelForm, UserCreationForm
 
 def home(request):
     return redirect(reverse("receipts:receipt-list"))
+
+
+def user_register(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'User created successfully')
+            return redirect(reverse('receipts:receipt-list'))
+        else:
+            messages.error(request, 'Some data is not valid')
+    else:
+        form = UserCreationForm()
+    return render(request, 'register.html', {'form': form})
+
 
 def receipts_list(request):
     receipts = Receipt.objects.all()

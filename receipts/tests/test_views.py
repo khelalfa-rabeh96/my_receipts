@@ -3,8 +3,16 @@ import datetime
 from django.urls import resolve
 from django.test import TestCase
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 
-from receipts.views import receipts_list, receipt_detail_view, NewReceiptView, ReceiptEditView
+from receipts.views import (
+    user_register,
+    receipts_list, 
+    receipt_detail_view, 
+    NewReceiptView, 
+    ReceiptEditView
+)
+
 from receipts.models import Receipt
 
 MOCK_RECEIPT_DATA =  {
@@ -20,6 +28,64 @@ MOCK_UPDATED_RECEIPT_DATA = {
     'date_of_purchase': datetime.date.today() - datetime.timedelta(days=2),
     "item_list": "updated items",
 }
+
+User = get_user_model()
+
+class TestRegister(TestCase):
+    def setUp(self):
+        self.url = reverse('user-register')
+    
+    def test_register_url_resolves_to_register_view(self):
+        found = resolve(self.url)
+        self.assertEqual(found.func, user_register)
+    
+    def test_register_view_uses_register_tempalte(self):
+        response = self.client.get(self.url)
+        self.assertTemplateUsed(response, 'register.html')
+    
+    def test_register_view_create_new_user_with_post_request(self):
+        data = {"username": "test_user", "password1": "Secret-password-1234", "password2": "Secret-password-1234"}
+        response = self.client.post(self.url, data=data)
+        self.assertEqual(User.objects.count(), 1)
+
+        first_user = User.objects.first()
+        self.assertEqual(first_user.username, data['username'])
+        self.assertTrue(first_user.check_password(data['password1']))
+    
+    def test_can_not_register_user_without_username(self):
+        data = {"password1": "Secret-password-1234", "password2": "Secret-password-1234"}
+        response = self.client.post(self.url, data=data)
+        self.assertIn("username", response.context['form'].errors)
+        self.assertEqual(User.objects.count(), 0)
+    
+
+    def test_can_not_register_user_with_username_already_exists(self):
+        data = {"username": "test_user", "password1": "Secret-password-1234", "password2": "Secret-password-1234"}
+        User.objects.create(username=data['username'])
+        response = self.client.post(self.url, data=data)
+        self.assertIn("username", response.context['form'].errors)
+        self.assertIn("A user with that username already exists.", response.context['form'].errors['username'])
+        self.assertEqual(User.objects.count(), 1)
+    
+
+    def test_can_not_register_user_without_password(self):
+        data = {"username": "test_user", "password2": "Secret-password-1234"}
+        response = self.client.post(self.url, data=data)
+        self.assertIn("password1", response.context['form'].errors)
+        self.assertEqual(User.objects.count(), 0)
+    
+    def test_can_not_register_user_without_password_confirm(self):
+        data = {"username": "test_user", "password1": "Secret-password-1234"}
+        response = self.client.post(self.url, data=data)
+        self.assertIn("password2", response.context['form'].errors)
+        self.assertEqual(User.objects.count(), 0)
+    
+    def test_can_not_register_user_with_password_and_password_confirm_don_not_match(self):
+        data = {"username": "test_user", "password1": "Secret-password-1234", "password1": "Secret-password"}
+        response = self.client.post(self.url, data=data)
+        self.assertIn("password2", response.context['form'].errors)
+        self.assertEqual(User.objects.count(), 0)
+     
 
 class ReceiptListTest(TestCase):
     def setUp(self):
