@@ -42,6 +42,37 @@ def receipt_detail_view(request, pk):
     if request.method == "GET":
         try:
             receipt = get_object_or_404(Receipt, pk=pk)
-            return render(request, "receipt_detail.html", {"receipt": receipt})
         except:
             return render(request, "404.html")
+        
+        return render(request, "receipt_detail.html", {"receipt": receipt})
+
+
+class ReceiptEditView(View):
+    def get(self, request, *args, **kwargs):
+        try:
+            receipt = get_object_or_404(Receipt, pk=self.kwargs.get('pk'))
+        except:
+            return render(request, "404.html")
+
+        form = ReceiptModelForm(instance=receipt)
+        context = {"form": form, "receipt": receipt}
+        return render(request, 'receipt_edit.html', context)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            receipt = get_object_or_404(Receipt, pk=self.kwargs.get('pk'))
+        except:
+            return render(request, "404.html")
+
+        form = ReceiptModelForm(request.POST or None, instance=receipt)
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, "This receipt was updated successfully.")
+            return redirect(reverse('receipts:receipt-detail', kwargs={'pk': receipt.pk}))
+        
+        else:
+            context = {"form": form}
+            messages.warning(request, "Some data is not valid")
+            return render(request, self.template_name, context)

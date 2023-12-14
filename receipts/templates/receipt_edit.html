@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
-{% block title %}New Receipt{% endblock %}
+{% block title %}Edit Receipt{% endblock %}
 {% block content %}
 <div class="form-wrapper">
-    <h1 class="h3">New Receipt</h1>
+    <h1 class="h3">Edit Receipt</h1>
     <form method="POST" class="form">
 
         <!-- Store Name Form Group -->
@@ -11,7 +11,7 @@
             <input 
                 type='text' class="form-control" id="store_name" 
                 name="store_name" required autofocus
-                {% if form.is_bound %}value="{{ form.store_name.value }}"{% endif %}
+                value="{{ form.store_name.value }}"
             />
             {% for err in form.store_name.errors %}
             <small class="text-danger ml-2">{{ err }}</small><br>
@@ -25,7 +25,7 @@
                 type='number' class="form-control" id="total_amount" 
                 name="total_amount" required autofocus
                 min="0" value="0" step="0.01"
-                {% if form.is_bound %}value="{{ form.total_amount.value }}"{% endif %}
+                value="{{ form.total_amount.value }}"
             />
             {% for err in form.total_amount.errors %}
             <small class="text-danger ml-2">{{ err }}</small><br>
@@ -37,7 +37,11 @@
         <div class="form-group">
             <label for="date_of_purchase">Date of purchase</label>
             <div class='input-group date' id='datetimepicker1'>
-                <input type='date' class="form-control" id="date_of_purchase" name="date_of_purchase" />
+                
+                <input 
+                    type='date' class="form-control" id="date_of_purchase" 
+                    name="date_of_purchase" value="{{ form.date_of_purchase.value |date:'Y-m-d'  }}" 
+                />
                 <span class="input-group-addon">
                     <i class="fas fa-calendar"></i>
                 </span>
@@ -54,14 +58,16 @@
             <input 
                 type='text' class="form-control" id="item_list" 
                 name="item_list" required autofocus
-                {% if form.is_bound %}value="{{ form.item_list.value }}"{% endif %}
+                value="{{ form.item_list.value }}"
             />
             {% for err in form.item_list.errors %}
             <small class="text-danger ml-2">{{ err }}</small><br>
             {% endfor %}
         </div>
       
-        <input id="submit_btn" type="submit" value="Create Receipt" class="btn btn-primary btn-lg btn-block">
+        <input id="submit_btn" type="submit" value="Edit Receipt" class="btn btn-primary btn-lg btn-block">
+        <a id="cancel-edit" class="btn btn-info btn-lg btn-block mt-20" style="color:white" 
+        href="{% url 'receipts:receipt-detail' receipt.pk %}">Cancel<a/>
 
         
         {% csrf_token %}

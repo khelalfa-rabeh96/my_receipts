@@ -82,7 +82,7 @@ class ReceiptListTest(LiveServerTestCase):
             self.driver.current_url, 
             self.live_server_url + reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk})
         )
-
+ 
 
 class NewReceiptTest(LiveServerTestCase):
     def setUp(self):
@@ -148,10 +148,9 @@ class NewReceiptTest(LiveServerTestCase):
         #date_of_purchase_input.click()
         date_of_purchase = self.date_of_purchase.strftime('%Y-%m-%d')
         self.driver.execute_script(
-            f"arguments[0].setAttribute('value', {date_of_purchase})", 
+            f"arguments[0].setAttribute('value', '{date_of_purchase}')", 
             date_of_purchase_input
         )
-
         item_list_input.send_keys(self.item_list)
         
         # The The Authed hits enter
@@ -168,3 +167,59 @@ class NewReceiptTest(LiveServerTestCase):
 
         self.check_for_successful_message_after_creating_new_receipt()   
 
+
+class ReceiptDetailTest(LiveServerTestCase):
+    def setUp(self):
+        service = Service(executable_path=env('GECKODRIVER_PATH'))
+        self.driver = webdriver.Firefox(service=service)
+        self.receipt = Receipt.objects.create(store_name="KFC", item_list="item1")
+        self.url = reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk})
+    
+    def tearDown(self):
+        self.driver.close()
+    
+    def test_can_navigate_from_receipt_detail_page_to_receipt_edit_page(self):
+        self.driver.get(self.live_server_url + self.url)
+        receipt_edit_btn = self.driver.find_element(By.ID,'receipt-edit')        
+        receipt_edit_btn.click()
+        
+        time.sleep(1)
+
+        self.assertEqual(
+            self.driver.current_url, 
+            self.live_server_url + reverse('receipts:receipt-edit', kwargs={'pk': self.receipt.pk})
+        )
+    
+
+class ReceiptEditTest(LiveServerTestCase):
+    def setUp(self):
+        service = Service(executable_path=env('GECKODRIVER_PATH'))
+        self.driver = webdriver.Firefox(service=service)
+        self.receipt = Receipt.objects.create(store_name="KFC", item_list="item1")
+        self.url = reverse('receipts:receipt-edit', kwargs={'pk': self.receipt.pk})
+    
+    def tearDown(self):
+        self.driver.close()
+    
+    def test_receipt_form_edit_fields_are_bounded_with_receipt_properties(self):
+        self.driver.get(self.live_server_url + self.url)
+        store_name_input = self.driver.find_element(By.ID,'store_name')
+        total_amount_input = self.driver.find_element(By.ID,'total_amount')
+        date_of_purchase_input = self.driver.find_element(By.ID,'date_of_purchase')
+        item_list_input = self.driver.find_element(By.ID,'item_list')
+
+        self.assertEqual(store_name_input.get_attribute('value'), self.receipt.store_name)
+        self.assertEqual(float(total_amount_input.get_attribute('value')), float(self.receipt.total_amount))
+        self.assertEqual(date_of_purchase_input.get_attribute('value'), self.receipt.date_of_purchase.strftime('%Y-%m-%d'))
+        self.assertEqual(item_list_input.get_attribute('value'), self.receipt.item_list)
+    
+    def test_get_back_from_receipt_edit_view_to_receipt_detail_view_via_cancel_btn(self):
+        self.driver.get(self.live_server_url + self.url)
+        cancel_edit = self.driver.find_element(By.ID,'cancel-edit')
+        
+        cancel_edit.click()
+        time.sleep(1)
+        self.assertEqual(
+            self.driver.current_url, 
+            self.live_server_url + reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk})
+        )

@@ -4,7 +4,7 @@ from django.urls import resolve
 from django.test import TestCase
 from django.urls import reverse
 
-from receipts.views import receipts_list, NewReceiptView, receipt_detail_view
+from receipts.views import receipts_list, NewReceiptView, receipt_detail_view, ReceiptEditView
 from receipts.models import Receipt
 
 class ReceiptDetailViewTest(TestCase):
@@ -18,7 +18,7 @@ class ReceiptDetailViewTest(TestCase):
         self.receipt = Receipt.objects.create(**self.receipt_data)
         self.url = reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk})
     
-    def test_root_url_resolves_to_receipts_list_view(self):
+    def test_receipt_detail_url_resolves_to_receipts_detail_view(self):
         found = resolve(self.url)
         self.assertEqual(found.func, receipt_detail_view)
     
@@ -103,7 +103,12 @@ class NewReceiptTest(TestCase):
         
     
     def test_redirects_after_successful_POST_new_receipt_to_receipt_list(self):
-        data = data={'store_name': 'Walmart', 'total_amount': 1000, 'item_list': 'item1, item2'}
+        data = {
+            'store_name': 'Walmart', 
+            'total_amount': 1000, 
+            'item_list': 'item1, item2', 
+            "date_of_purchase": datetime.date.today()
+        }
         response = self.client.post(
             self.url, 
             data
@@ -124,3 +129,38 @@ class NewReceiptTest(TestCase):
         data = {}
         response = self.client.post(self.url, data=data)
         self.assertTemplateUsed(response, 'new_receipt.html')
+
+
+class ReceiptEditView(TestCase):
+    def setUp(self):
+        self.receipt_data = {
+            "store_name": 'KFC', 
+            "total_amount": 19.9, 
+            "date_of_purchase": datetime.date.today(),
+            "item_list": 'Fries chicken, Apple Juice, Hotdogs'
+        }
+        self.receipt = Receipt.objects.create(**self.receipt_data)
+        self.url = reverse('receipts:receipt-edit', kwargs={'pk': self.receipt.pk})
+    
+    def test_receipt_edit_view_uses_receipt_edit_template(self):
+        response = self.client.get(self.url)
+        self.assertTemplateUsed(response, 'receipt_edit.html')
+    
+    def test_receipt_edit_view_can_edit_a_receipt(self):
+        updated_data = {
+            'store_name': 'Walmart', 
+            'total_amount': 1000 , 
+            'date_of_purchase': datetime.date.today() - datetime.timedelta(days=2),
+            "item_list": "updated items",
+        }
+        self.client.post(self.url, data=updated_data)
+        
+        receipt = Receipt.objects.first()
+        self.assertEqual(receipt.store_name, updated_data['store_name'])
+        self.assertEqual(receipt.total_amount, updated_data['total_amount'])
+        self.assertEqual(receipt.date_of_purchase, updated_data['date_of_purchase'])
+        self.assertEqual(receipt.item_list, updated_data['item_list'])
+    
+    def test_redirects_after_successful_POST_new_receipt_to_receipt_list(self):
+        response = self.client.post(self.url, self.receipt_data)
+        self.assertRedirects(response, reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk}))
