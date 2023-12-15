@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 
 from .models import Receipt
-from .forms import ReceiptModelForm, UserCreationForm, LoginForm
+from .forms import ReceiptModelForm, RegisterModelForm, LoginForm
 
 def home(request):
     return redirect(reverse("receipts:receipt-list"))
@@ -13,7 +13,7 @@ def home(request):
 
 def user_register(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = RegisterModelForm(request.POST)
         
         if form.is_valid():
             form.save()
@@ -22,7 +22,7 @@ def user_register(request):
         else:
             messages.error(request, 'Some data is not valid')
     else:
-        form = UserCreationForm()
+        form = RegisterModelForm()
     return render(request, 'register.html', {'form': form})
 
 

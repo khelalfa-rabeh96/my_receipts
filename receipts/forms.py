@@ -15,10 +15,10 @@ class ReceiptModelForm(forms.ModelForm):
         fields = ['store_name', 'total_amount', 'item_list', 'date_of_purchase']
 
 
-class RegisterModelFOrm(UserCreationForm):
+class RegisterModelForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ['username', 'password1']
+        fields = ['username', 'password1', 'password2']
 
 
 class LoginForm(forms.Form):
