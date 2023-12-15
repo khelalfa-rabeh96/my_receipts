@@ -18,7 +18,7 @@ def user_register(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'User created successfully')
-            return redirect(reverse('receipts:receipt-list'))
+            return redirect(reverse('user-login'))
         else:
             messages.error(request, 'Some data is not valid')
     else:

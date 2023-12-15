@@ -45,22 +45,12 @@ class TestRegister(TestCase):
         response = self.client.get(self.url)
         self.assertTemplateUsed(response, 'register.html')
     
-    def test_register_view_create_new_user_with_post_request(self):
-        data = {"username": "test_user", "password1": "Secret-password-1234", "password2": "Secret-password-1234"}
-        response = self.client.post(self.url, data=data)
-        self.assertEqual(User.objects.count(), 1)
-
-        first_user = User.objects.first()
-        self.assertEqual(first_user.username, data['username'])
-        self.assertTrue(first_user.check_password(data['password1']))
-    
     def test_can_not_register_user_without_username(self):
         data = {"password1": "Secret-password-1234", "password2": "Secret-password-1234"}
         response = self.client.post(self.url, data=data)
         self.assertIn("username", response.context['form'].errors)
         self.assertEqual(User.objects.count(), 0)
     
-
     def test_can_not_register_user_with_username_already_exists(self):
         data = {"username": "test_user", "password1": "Secret-password-1234", "password2": "Secret-password-1234"}
         User.objects.create(username=data['username'])
@@ -69,7 +59,6 @@ class TestRegister(TestCase):
         self.assertIn("A user with that username already exists.", response.context['form'].errors['username'])
         self.assertEqual(User.objects.count(), 1)
     
-
     def test_can_not_register_user_without_password(self):
         data = {"username": "test_user", "password2": "Secret-password-1234"}
         response = self.client.post(self.url, data=data)
@@ -82,14 +71,28 @@ class TestRegister(TestCase):
         self.assertIn("password2", response.context['form'].errors)
         self.assertEqual(User.objects.count(), 0)
     
-    def test_can_not_register_user_with_password_and_password_confirm_don_not_match(self):
+    def test_can_not_register_user_with_password_and_password_confirm_do_not_match(self):
         data = {"username": "test_user", "password1": "Secret-password-1234", "password1": "Secret-password"}
         response = self.client.post(self.url, data=data)
         self.assertIn("password2", response.context['form'].errors)
         self.assertEqual(User.objects.count(), 0)
-     
+    
+    def test_register_view_can_create_new_user_with_valid_user_data(self):
+        data = {"username": "test_user", "password1": "Secret-password-1234", "password2": "Secret-password-1234"}
+        response = self.client.post(self.url, data=data)
+        self.assertEqual(User.objects.count(), 1)
 
-class TestRegister(TestCase):
+        first_user = User.objects.first()
+        self.assertEqual(first_user.username, data['username'])
+        self.assertTrue(first_user.check_password(data['password1']))
+    
+    def test_redirect_user_to_login_after_successful_register(self):
+        data = {"username": "test_user", "password1": "Secret-password-1234", "password2": "Secret-password-1234"}
+        response = self.client.post(self.url, data=data)
+        self.assertRedirects(response, reverse('user-login'))
+    
+
+class TestLogin(TestCase):
     def setUp(self):
         self.url = reverse('user-login')
         
@@ -137,7 +140,6 @@ class TestRegister(TestCase):
     def test_redirect_user_to_receipt_list_after_successful_login(self):
         response = self.client.post(self.url, data=self.user_credentials)
         self.assertRedirects(response, reverse('receipts:receipt-list'))
-
 
 
 class ReceiptListTest(TestCase):
