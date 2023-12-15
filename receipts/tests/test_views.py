@@ -91,6 +91,12 @@ class TestRegister(TestCase):
         response = self.client.post(self.url, data=data)
         self.assertRedirects(response, reverse('user-login'))
     
+    def test_set_user_to_active_after_successful_register(self):
+        data = {"username": "test_user", "password1": "Secret-password-1234", "password2": "Secret-password-1234"}
+        response = self.client.post(self.url, data=data)
+        user = User.objects.filter(username=data['username']).first()
+        self.assertTrue(user.is_active)
+
 
 class TestLogin(TestCase):
     def setUp(self):

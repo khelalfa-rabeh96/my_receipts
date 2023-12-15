@@ -2,10 +2,20 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.views import View
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, get_user_model
 
 from .models import Receipt
 from .forms import ReceiptModelForm, RegisterModelForm, LoginForm
+
+User = get_user_model()
+
+
+def set_user_active(username):
+    user = User.objects.filter(username=username).first()
+    if (user) and (not user.is_active):
+        user.is_active == True
+        user.save()
+
 
 def home(request):
     return redirect(reverse("receipts:receipt-list"))
@@ -18,6 +28,8 @@ def user_register(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'User created successfully')
+            username = form.cleaned_data.get('username')
+            set_user_active(username)
             return redirect(reverse('user-login'))
         else:
             messages.error(request, 'Some data is not valid')
