@@ -96,7 +96,7 @@ class TestRegister(TestCase):
         response = self.client.post(self.url, data=data)
         user = User.objects.filter(username=data['username']).first()
         self.assertTrue(user.is_active)
-
+    
 
 class TestLogin(TestCase):
     def setUp(self):

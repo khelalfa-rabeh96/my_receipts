@@ -2,7 +2,9 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.views import View
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, get_user_model
+from django.contrib.auth import authenticate, login, logout,  get_user_model
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import Receipt
 from .forms import ReceiptModelForm, RegisterModelForm, LoginForm
@@ -56,14 +58,19 @@ def user_login(request):
     return render(request, 'login.html', {'form': form})
 
 
+def user_logout(request):
+    logout(request)
+    return redirect(reverse('user-login'))
 
+@login_required(login_url='user-login')
 def receipts_list(request):
     receipts = Receipt.objects.all()
     return render(request, 'receipt_list.html', {'receipts': receipts})
 
 
-class NewReceiptView(View):
+class NewReceiptView(LoginRequiredMixin, View):
     template_name = "new_receipt.html"
+    login_url = 'user-login'
 
     def get(self, request, *args, **kwargs):
         form = ReceiptModelForm()
@@ -83,6 +90,7 @@ class NewReceiptView(View):
             return render(request, self.template_name, context)
 
 
+@login_required(login_url='user-login')
 def receipt_detail_view(request, pk):
     if request.method == "GET":
         try:
@@ -104,8 +112,9 @@ class ReceiptMixinObject:
         return receipt
 
     
-class ReceiptEditView(View, ReceiptMixinObject):
+class ReceiptEditView(LoginRequiredMixin, View, ReceiptMixinObject):
     template_name = 'receipt_edit.html'
+    login_url = 'user-login'
 
     def get(self, request, *args, **kwargs):
         receipt = self.get_object(request)
@@ -129,9 +138,10 @@ class ReceiptEditView(View, ReceiptMixinObject):
             return render(request, self.template_name, context)
 
 
-class ReceiptDeleteView(View, ReceiptMixinObject):
+class ReceiptDeleteView(LoginRequiredMixin, View, ReceiptMixinObject):
     tempalate_name = 'receipt_delete.html'
-
+    login_url = 'user-login'
+    
     def get(self, request, *args, **kwargs):
         receipt = self.get_object(request)
         context = {"receipt": receipt}
