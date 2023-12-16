@@ -4,7 +4,9 @@ import datetime
 from decimal import Decimal
 from django.test import TestCase
 from django.test import LiveServerTestCase
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -20,13 +22,29 @@ env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env()
 
 MAX_WAIT = 10
+User = get_user_model()
 
+
+def create_and_login_user():
+    user = User.objects.create(username="test_username")
+    user.set_password("Secret-password-1234")
+    user.is_active = True 
+    user.save()
+
+    return user
 
 # Shared Setup for webdriver
-class BaseTest(LiveServerTestCase):
+class BaseTest(StaticLiveServerTestCase):
     def setUp(self):
         service = Service(executable_path=env('GECKODRIVER_PATH'))
         self.driver = webdriver.Firefox(service=service)
+        self.user = create_and_login_user()
+        self.client.force_login(self.user)
+        cookie = self.client.cookies['sessionid']
+        self.driver.get(self.live_server_url)  #selenium will set cookie domain based on current page domain
+        self.driver.add_cookie({'name': 'sessionid', 'value': cookie.value, 'secure': False, 'path': '/'})
+        self.driver.refresh() #need to update page for logged in user
+
 
 
 class ReceiptListTest(BaseTest):
@@ -156,6 +174,13 @@ class NewReceiptTest(BaseTest):
 
         self.check_for_successful_message_after_creating_new_receipt()   
 
+    def test_layout_and_styling(self):
+        self.driver.get(self.live_server_url + self.url)
+        self.driver.set_window_size(1024, 768)
+        
+        # check receipt form's submit button backgroun-color is bootstrap primary color
+        submit_btn = self.driver.find_element(By.ID, 'submit_btn')
+        self.assertEqual(submit_btn.value_of_css_property('background-color'), 'rgb(0, 123, 255)')
 
 class ReceiptDetailTest(BaseTest):
     def setUp(self):
