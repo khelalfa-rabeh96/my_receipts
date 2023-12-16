@@ -33,7 +33,7 @@ MOCK_UPDATED_RECEIPT_DATA = {
 
 User = get_user_model()
 
-"""
+
 def create_and_login_user():
     user = User.objects.create(username="test_username")
     user.set_password("Secret-password-1234")
@@ -172,8 +172,8 @@ class ReceiptListTest(TestCase):
         self.assertTemplateUsed(response, 'receipt_list.html')
 
     def test_displays_all_receipts_with_item_list_and_total_amount(self):
-        Receipt.objects.create(store_name="walmart", total_amount=1000, item_list="item1, item2")
-        Receipt.objects.create(store_name='KFC', total_amount=2000, item_list="item3, item4")
+        Receipt.objects.create(store_name="walmart", total_amount=1000, item_list="item1, item2", owner=self.user)
+        Receipt.objects.create(store_name='KFC', total_amount=2000, item_list="item3, item4", owner=self.user)
 
         response = self.client.get(self.url)
 
@@ -186,7 +186,7 @@ class ReceiptListTest(TestCase):
     def test_receipt_list_displays_only_first_25_chars_from_item_list_while_the_rest_continued_with_dots(self):
         item_list = "12345678901234567890123456789"
         expected_item_list_displayed = "123456789012345678901234…"
-        Receipt.objects.create(store_name='KFC', total_amount=2000, item_list=item_list)
+        Receipt.objects.create(store_name='KFC', total_amount=2000, item_list=item_list, owner=self.user)
         
         response = self.client.get(self.url)
         self.assertIn(expected_item_list_displayed, response.content.decode())
@@ -207,7 +207,8 @@ class NewReceiptTest(TestCase):
         self.assertTemplateUsed(response, 'new_receipt.html')
     
     def test_new_receipt_view_can_add_new_receipt_with_a_POST_request(self):
-        self.client.post(self.url, data=MOCK_RECEIPT_DATA)
+        #print("************************************: ", self.user, self.user.id)
+        self.client.post(self.url, data={**MOCK_RECEIPT_DATA})
         
         self.assertEqual(Receipt.objects.count(), 1)
         receipt = Receipt.objects.first()
@@ -216,10 +217,11 @@ class NewReceiptTest(TestCase):
         self.assertEqual(receipt.total_amount, MOCK_RECEIPT_DATA['total_amount'])
         self.assertEqual(receipt.date_of_purchase, MOCK_RECEIPT_DATA['date_of_purchase'])
         self.assertEqual(receipt.item_list, MOCK_RECEIPT_DATA['item_list'])
+        self.assertEqual(receipt.owner.id, self.user.id)
         
     
     def test_redirects_to_receipt_list_after_successfully_POSTING_new_receipt(self):
-        response = self.client.post(self.url, MOCK_RECEIPT_DATA)
+        response = self.client.post(self.url, data={**MOCK_RECEIPT_DATA})
         self.assertRedirects(response, reverse('receipts:receipt-list'))
     
     def test_can_not_POST_new_receipt_without_item_list(self):
@@ -241,9 +243,9 @@ class NewReceiptTest(TestCase):
 
 class ReceiptDetailViewTest(TestCase):
     def setUp(self):
-        self.receipt = Receipt.objects.create(**MOCK_RECEIPT_DATA)
-        self.url = reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk})
         self.user = create_and_login_user()
+        self.receipt = Receipt.objects.create(**{**MOCK_RECEIPT_DATA, "owner": self.user})
+        self.url = reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk})
         self.client.force_login(self.user)
     
     def test_receipt_detail_url_resolves_to_receipts_detail_view(self):
@@ -272,9 +274,9 @@ class ReceiptDetailViewTest(TestCase):
 
 class ReceiptEditView(TestCase):
     def setUp(self):
-        self.receipt = Receipt.objects.create(**MOCK_RECEIPT_DATA)
-        self.url = reverse('receipts:receipt-edit', kwargs={'pk': self.receipt.pk})
         self.user = create_and_login_user()
+        self.receipt = Receipt.objects.create(**{**MOCK_RECEIPT_DATA, "owner": self.user})
+        self.url = reverse('receipts:receipt-edit', kwargs={'pk': self.receipt.pk})
         self.client.force_login(self.user)
 
     def test_receipt_edit_view_uses_receipt_edit_template(self):
@@ -291,15 +293,15 @@ class ReceiptEditView(TestCase):
         self.assertEqual(receipt.item_list, MOCK_UPDATED_RECEIPT_DATA['item_list'])
     
     def test_redirects_to_receipt_detail_view_after_successfully_editing_a_receipt(self):
-        response = self.client.post(self.url, MOCK_RECEIPT_DATA)
+        response = self.client.post(self.url, {**MOCK_RECEIPT_DATA, "owner_id": self.user.id})
         self.assertRedirects(response, reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk}))
 
 
 class ReceipDeleteView(TestCase):
     def setUp(self):
-        self.receipt = Receipt.objects.create(**MOCK_RECEIPT_DATA)
-        self.url = reverse('receipts:receipt-delete', kwargs={'pk': self.receipt.pk})
         self.user = create_and_login_user()
+        self.receipt = Receipt.objects.create(**{**MOCK_RECEIPT_DATA, "owner": self.user})
+        self.url = reverse('receipts:receipt-delete', kwargs={'pk': self.receipt.pk})
         self.client.force_login(self.user)
 
     def test_receipt_delete_view_uses_receipt_delete_template(self):
@@ -313,4 +315,3 @@ class ReceipDeleteView(TestCase):
     def test_receipt_delete_view_redirects_to_receipt_list_view_after_successfuly_delete_a_receipt(self):
         response = self.client.post(self.url, {})
         self.assertRedirects(response, reverse('receipts:receipt-list'))
-"""
