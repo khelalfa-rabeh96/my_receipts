@@ -34,9 +34,9 @@ MOCK_UPDATED_RECEIPT_DATA = {
 User = get_user_model()
 
 
-def create_and_login_user():
-    user = User.objects.create(username="test_username")
-    user.set_password("Secret-password-1234")
+def create_user(username="test_username", password="Secret-password-1234"):
+    user = User.objects.create(username=username)
+    user.set_password(password)
     user.is_active = True 
     user.save()
 
@@ -160,7 +160,7 @@ class TestLogin(TestCase):
 class ReceiptListTest(TestCase):
     def setUp(self):
         self.url = reverse('receipts:receipt-list')
-        self.user = create_and_login_user()
+        self.user = create_user(username="test_username", password="")
         self.client.force_login(self.user)
 
     def test_receipt_list_url_resolves_to_receipts_list_view(self):
@@ -195,7 +195,7 @@ class ReceiptListTest(TestCase):
 class NewReceiptTest(TestCase):
     def setUp(self):
         self.url = reverse('receipts:new-receipt')
-        self.user = create_and_login_user()
+        self.user = create_user(username="test_username", password="")
         self.client.force_login(self.user)
     
     def test_new_receipt_url_resolves_to_new_receipt_view(self):
@@ -243,7 +243,7 @@ class NewReceiptTest(TestCase):
 
 class ReceiptDetailViewTest(TestCase):
     def setUp(self):
-        self.user = create_and_login_user()
+        self.user = create_user(username="test_username", password="")
         self.receipt = Receipt.objects.create(**{**MOCK_RECEIPT_DATA, "owner": self.user})
         self.url = reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk})
         self.client.force_login(self.user)
@@ -274,7 +274,7 @@ class ReceiptDetailViewTest(TestCase):
 
 class ReceiptEditView(TestCase):
     def setUp(self):
-        self.user = create_and_login_user()
+        self.user = create_user(username="test_username", password="")
         self.receipt = Receipt.objects.create(**{**MOCK_RECEIPT_DATA, "owner": self.user})
         self.url = reverse('receipts:receipt-edit', kwargs={'pk': self.receipt.pk})
         self.client.force_login(self.user)
@@ -299,7 +299,7 @@ class ReceiptEditView(TestCase):
 
 class ReceipDeleteView(TestCase):
     def setUp(self):
-        self.user = create_and_login_user()
+        self.user = create_user(username="test_username", password="")
         self.receipt = Receipt.objects.create(**{**MOCK_RECEIPT_DATA, "owner": self.user})
         self.url = reverse('receipts:receipt-delete', kwargs={'pk': self.receipt.pk})
         self.client.force_login(self.user)
