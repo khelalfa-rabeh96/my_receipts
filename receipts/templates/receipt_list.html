@@ -3,7 +3,7 @@
 {% block content %}
 <div class="receipt_list_container">
         <h3>
-            <a href="/receipts/new" id="add-receipt">
+            <a href="{% url 'receipts:new-receipt' %}" id="add-receipt">
                 <button class="btn btn-primary btn-lg">+ Add</button>
             </a>
         </h3>
@@ -11,7 +11,7 @@
         <ul id="my_receipt_list" class="receipts">
             {% for receipt in receipts %}
                 <li class=" ">
-                    <a href="/receipts/{{ receipt.pk }}" class="my_receipt_item item d-flex flex-row justify-content-between">
+                    <a href="{% url 'receipts:receipt-detail' receipt.pk %}" class="my_receipt_item item d-flex flex-row justify-content-between">
                         <span class="item_list">{{ receipt.item_list|truncatechars:25  }}</span>
                         <span class="total_amount">${{ receipt.total_amount }}</span>
                     </a>

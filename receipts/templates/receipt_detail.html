@@ -18,8 +18,8 @@
         </li>
     </div>
     <div style="margin-top:15px">
-        <a id="receipt-edit" class="btn btn-warning" href="{{ receipt.pk }}/edit">Edit</a>
-        <a id="receipt-delete" class="btn btn-danger" href="{{ receipt.pk }}/delete">Delete</a>
+        <a id="receipt-edit" class="btn btn-warning" href="{% url 'receipts:receipt-edit' receipt.pk %}">Edit</a>
+        <a id="receipt-delete" class="btn btn-danger" href="{% url 'receipts:receipt-delete' receipt.pk %}">Delete</a>
     </div>
    
 </div>

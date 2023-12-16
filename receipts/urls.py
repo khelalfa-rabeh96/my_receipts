@@ -8,6 +8,6 @@ urlpatterns = [
     path('', receipts_list, name="receipt-list"),
     path('new/', NewReceiptView.as_view(), name="new-receipt"),
     path('<int:pk>/', receipt_detail_view, name="receipt-detail"),
-    path('<int:pk>/edit/', ReceiptEditView.as_view(), name="receipt-edit"),
-    path('<int:pk>/delete/', ReceiptDeleteView.as_view(), name="receipt-delete"),
+    path('<int:pk>/edit', ReceiptEditView.as_view(), name="receipt-edit"),
+    path('<int:pk>/delete', ReceiptDeleteView.as_view(), name="receipt-delete"),
 ]
