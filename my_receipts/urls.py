@@ -17,10 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from receipts.views import home, user_register, user_login, user_logout
+from receipts.views import home, page_not_found, user_register, user_login, user_logout
 
 urlpatterns = [
     path('', home, name="home"),
+    path('404/', page_not_found, name="page-not-found"),
     path('register/', user_register,  name="user-register"),
     path('login/', user_login,  name="user-login"),
     path('logout/', user_logout,  name="user-logout"),

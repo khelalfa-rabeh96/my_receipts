@@ -5,10 +5,10 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout,  get_user_model
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import Http404
 
 from .models import Receipt
 from .forms import ReceiptModelForm, RegisterModelForm, LoginForm
-
 
 User = get_user_model()
 
@@ -22,6 +22,10 @@ def set_user_active(username):
 
 def home(request):
     return redirect(reverse("receipts:receipt-list"))
+
+
+def page_not_found(request):
+    return render(request, '404.html')
 
 
 def user_register(request):
@@ -99,18 +103,18 @@ def receipt_detail_view(request, pk):
         try:
             receipt = get_object_or_404(Receipt, pk=pk)
         except:
-            return render(request, "404.html")
+            return redirect(reverse('page-not-found'))
         
         return render(request, "receipt_detail.html", {"receipt": receipt})
 
 
 # Get receipt object by pk or redirect to 404 page if not exists
 class ReceiptMixinObject:
-    def get_object(self, request):
+    def get_object(self):
         try:
             receipt = get_object_or_404(Receipt, pk=self.kwargs.get('pk'))
         except:
-            return render(request, "404.html")
+            return render(self.request, "404.html")
         
         return receipt
 
@@ -120,14 +124,13 @@ class ReceiptEditView(LoginRequiredMixin, View, ReceiptMixinObject):
     login_url = 'user-login'
 
     def get(self, request, *args, **kwargs):
-        receipt = self.get_object(request)
+        receipt = self.get_object()
         form = ReceiptModelForm(instance=receipt)
         context = {"form": form, "receipt": receipt}
-
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
-        receipt = self.get_object(request)
+        receipt = self.get_object()
         form = ReceiptModelForm(request.POST or None, instance=receipt)
 
         if form.is_valid():
@@ -146,12 +149,12 @@ class ReceiptDeleteView(LoginRequiredMixin, View, ReceiptMixinObject):
     login_url = 'user-login'
     
     def get(self, request, *args, **kwargs):
-        receipt = self.get_object(request)
+        receipt = self.get_object()
         context = {"receipt": receipt}
         return render(request, self.tempalate_name, context=context)
     
     def post(self, request, *args, **kwargs):
-        receipt = self.get_object(request)
+        receipt = self.get_object()
         receipt.delete()
         messages.success(request, "This receipt was deleted successfully.")
         return redirect(reverse('receipts:receipt-list'))

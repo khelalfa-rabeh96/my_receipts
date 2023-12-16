@@ -290,7 +290,7 @@ class ReceiptDetailViewTest(TestCase):
         after_last_id = Receipt.objects.count() + 1
         response = self.client.get(reverse('receipts:receipt-detail', kwargs={'pk': after_last_id}))
         
-        self.assertTemplateUsed(response, '404.html')
+        self.assertRedirects(response, reverse('page-not-found'))
     
 
 class ReceiptEditView(TestCase):
