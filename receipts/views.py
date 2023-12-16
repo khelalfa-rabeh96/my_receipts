@@ -102,6 +102,8 @@ def receipt_detail_view(request, pk):
     if request.method == "GET":
         try:
             receipt = get_object_or_404(Receipt, pk=pk)
+            if receipt.owner != request.user:
+                return redirect(reverse('page-not-found'))
         except:
             return redirect(reverse('page-not-found'))
         
@@ -114,7 +116,7 @@ class ReceiptMixinObject:
         try:
             receipt = get_object_or_404(Receipt, pk=self.kwargs.get('pk'))
         except:
-            return render(self.request, "404.html")
+            return redirect(reverse('page-not-found'))
         
         return receipt
 
@@ -125,14 +127,19 @@ class ReceiptEditView(LoginRequiredMixin, View, ReceiptMixinObject):
 
     def get(self, request, *args, **kwargs):
         receipt = self.get_object()
+        if receipt.owner != self.request.user:
+            return redirect(reverse('page-not-found'))
+
         form = ReceiptModelForm(instance=receipt)
         context = {"form": form, "receipt": receipt}
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         receipt = self.get_object()
+        if receipt.owner != self.request.user:
+            return redirect(reverse('page-not-found'))
+        
         form = ReceiptModelForm(request.POST or None, instance=receipt)
-
         if form.is_valid():
             form.save()
             messages.success(request, "This receipt was updated successfully.")
@@ -150,11 +157,17 @@ class ReceiptDeleteView(LoginRequiredMixin, View, ReceiptMixinObject):
     
     def get(self, request, *args, **kwargs):
         receipt = self.get_object()
+        if receipt.owner != self.request.user:
+            return redirect(reverse('page-not-found'))
+        
         context = {"receipt": receipt}
         return render(request, self.tempalate_name, context=context)
     
     def post(self, request, *args, **kwargs):
         receipt = self.get_object()
+        if receipt.owner != self.request.user:
+            return redirect(reverse('page-not-found'))
+
         receipt.delete()
         messages.success(request, "This receipt was deleted successfully.")
         return redirect(reverse('receipts:receipt-list'))

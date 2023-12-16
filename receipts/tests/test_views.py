@@ -292,6 +292,16 @@ class ReceiptDetailViewTest(TestCase):
         
         self.assertRedirects(response, reverse('page-not-found'))
     
+    def test_only_receipt_owner_can_view_his_receipt_detail_otherwise_redirect_to_404_page(self):
+        another_user = create_user(username="another_user", password="Another-password-1234")
+
+        # another_user try login and access to self.user's receipt detail 
+        self.client.force_login(another_user)
+        response = self.client.get(self.url)
+
+        # another_user redirected to 404 page
+        self.assertRedirects(response, reverse('page-not-found'))
+    
 
 class ReceiptEditView(TestCase):
     def setUp(self):
@@ -316,7 +326,18 @@ class ReceiptEditView(TestCase):
     def test_redirects_to_receipt_detail_view_after_successfully_editing_a_receipt(self):
         response = self.client.post(self.url, {**MOCK_RECEIPT_DATA, "owner_id": self.user.id})
         self.assertRedirects(response, reverse('receipts:receipt-detail', kwargs={'pk': self.receipt.pk}))
-
+    
+    def test_only_receipt_owner_can_get_his_receipt_edit_form_otherwise_redirect_to_404_page(self):
+        another_user = create_user(username="another_user", password="Another-password-1234")
+        self.client.force_login(another_user)
+        response = self.client.get(self.url)
+        self.assertRedirects(response, reverse('page-not-found'))
+    
+    def test_only_receipt_owner_can_send_a_post_request_to_update_his_receipt_otherwise_redirect_to_404_page(self):
+        another_user = create_user(username="another_user", password="Another-password-1234")
+        self.client.force_login(another_user)
+        response = self.client.post(self.url, MOCK_UPDATED_RECEIPT_DATA)
+        self.assertRedirects(response, reverse('page-not-found'))
 
 class ReceipDeleteView(TestCase):
     def setUp(self):
@@ -336,3 +357,15 @@ class ReceipDeleteView(TestCase):
     def test_receipt_delete_view_redirects_to_receipt_list_view_after_successfuly_delete_a_receipt(self):
         response = self.client.post(self.url, {})
         self.assertRedirects(response, reverse('receipts:receipt-list'))
+    
+    def test_only_receipt_owner_can_get_his_receipt_delete_form_otherwise_redirect_to_404_page(self):
+        another_user = create_user(username="another_user", password="Another-password-1234")
+        self.client.force_login(another_user)
+        response = self.client.get(self.url)
+        self.assertRedirects(response, reverse('page-not-found'))
+    
+    def test_only_receipt_owner_can_send_a_post_request_to_delete_his_receip_otherwise_redirect_to_404_page(self):
+        another_user = create_user(username="another_user", password="Another-password-1234")
+        self.client.force_login(another_user)
+        response = self.client.post(self.url)
+        self.assertRedirects(response, reverse('page-not-found'))
