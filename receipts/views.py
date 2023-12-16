@@ -3,11 +3,12 @@ from django.urls import reverse
 from django.views import View
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout,  get_user_model
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import Receipt
 from .forms import ReceiptModelForm, RegisterModelForm, LoginForm
+
 
 User = get_user_model()
 
@@ -64,7 +65,7 @@ def user_logout(request):
 
 @login_required(login_url='user-login')
 def receipts_list(request):
-    receipts = Receipt.objects.all()
+    receipts = Receipt.objects.filter(owner=request.user)
     return render(request, 'receipt_list.html', {'receipts': receipts})
 
 

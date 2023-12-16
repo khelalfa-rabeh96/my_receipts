@@ -191,6 +191,28 @@ class ReceiptListTest(TestCase):
         response = self.client.get(self.url)
         self.assertIn(expected_item_list_displayed, response.content.decode())
 
+    # self.user is logged in set up funtion
+    def test_receipt_list_diplsays_only_logged_in_user_own_receipts(self):
+        # create receipt with owner as self.user
+        user_receipt = Receipt.objects.create(store_name="walmart", total_amount=1000, item_list="item1, item2", owner=self.user)
+        
+        # create another user and create a receipt for him
+        another_user = create_user(username="another_user", password="Another-password-1234")
+        another_user_receipt = Receipt.objects.create(
+            store_name="walmart", 
+            total_amount=2000, 
+            item_list="another_user_item1, item2", 
+            owner=another_user
+        )
+
+        response = self.client.get(self.url)
+
+        self.assertIn(f'{user_receipt.total_amount}', response.content.decode())
+        self.assertIn(f'{user_receipt.item_list}', response.content.decode())
+
+        self.assertNotIn(f'{another_user_receipt.total_amount}', response.content.decode())
+        self.assertIn(f'{user_receipt.item_list}', response.content.decode())
+
 
 class NewReceiptTest(TestCase):
     def setUp(self):
@@ -207,7 +229,6 @@ class NewReceiptTest(TestCase):
         self.assertTemplateUsed(response, 'new_receipt.html')
     
     def test_new_receipt_view_can_add_new_receipt_with_a_POST_request(self):
-        #print("************************************: ", self.user, self.user.id)
         self.client.post(self.url, data={**MOCK_RECEIPT_DATA})
         
         self.assertEqual(Receipt.objects.count(), 1)
