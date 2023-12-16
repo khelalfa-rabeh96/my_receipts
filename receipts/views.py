@@ -71,7 +71,7 @@ def receipts_list(request):
 class NewReceiptView(LoginRequiredMixin, View):
     template_name = "new_receipt.html"
     login_url = 'user-login'
-
+    
     def get(self, request, *args, **kwargs):
         form = ReceiptModelForm()
         context = {"form": form}
@@ -81,7 +81,9 @@ class NewReceiptView(LoginRequiredMixin, View):
         form = ReceiptModelForm(request.POST or None)
         
         if form.is_valid():
-            form.save()
+            receipt = form.save(commit=False)
+            receipt.owner = request.user
+            receipt.save()
             messages.success(request, "An new receipt was created successfully.")
             return redirect(reverse('receipts:receipt-list'))
         else:
